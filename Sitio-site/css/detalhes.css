@@ -1,0 +1,186 @@
+/* Detalhes decorativos: runas, linhas douradas e toques em tons pastéis */
+:root {
+  --lilas: #b9a3dc;
+  --lavanda: #ece4f7;
+  --roxo-suave: #8f78b8;
+  --pessego: #f1c9a5;
+  --rosa-antigo: #e3b3ad;
+  --azul-nevoa: #b3cbe2;
+  --ouro-claro: #e2c98d;
+}
+
+/* ---------- Faixa rúnica entre seções ---------- */
+.faixa-runica {
+  position: relative; z-index: 3;
+  display: flex; align-items: center; justify-content: center; gap: 1rem;
+  padding: .9rem 1rem; overflow: hidden;
+  background: linear-gradient(90deg, var(--musgo-escuro), #2a2440 50%, var(--musgo-escuro));
+  color: var(--ouro-claro); font-size: 1.05rem; letter-spacing: .5em; white-space: nowrap;
+  border-top: 1px solid var(--ouro); border-bottom: 1px solid var(--ouro);
+  box-shadow: inset 0 3px 0 -2px rgba(201,165,90,.5), inset 0 -3px 0 -2px rgba(201,165,90,.5);
+}
+.faixa-runica::before, .faixa-runica::after {
+  content: ""; flex: 1; max-width: 220px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ouro));
+}
+.faixa-runica::after { transform: scaleX(-1); }
+.faixa-runica .gema { display: inline-block; width: 9px; height: 9px; transform: rotate(45deg); background: var(--lilas); box-shadow: 0 0 0 2px var(--musgo-escuro), 0 0 0 3px var(--ouro); margin: 0 .3rem; vertical-align: middle; letter-spacing: 0; }
+.faixa-runica .gema.pessego { background: var(--pessego); }
+.faixa-runica .gema.azul { background: var(--azul-nevoa); }
+.faixa-runica .gema.rosa { background: var(--rosa-antigo); }
+
+/* ---------- Títulos ---------- */
+.titulo-secao::after {
+  content: "ᚨ ✦ ᛟ ✦ ᛉ"; display: block; margin-top: .4rem;
+  color: var(--roxo-suave); font-size: .85rem; letter-spacing: .5em; text-indent: .5em; opacity: .8;
+}
+.secao-escura .titulo-secao::after { color: var(--lilas); }
+.titulo-secao svg { padding: 6px; border-radius: 50%; border: 1px solid rgba(201,165,90,.55); box-shadow: 0 0 0 4px rgba(185,163,220,.15), 0 0 0 5px rgba(201,165,90,.25); box-sizing: content-box; }
+
+/* ---------- Abertura: moldura dourada ---------- */
+.hero .moldura-hero { position: absolute; inset: 88px 22px 74px; pointer-events: none; z-index: 1; border: 1px solid rgba(201,165,90,.35); }
+.hero .moldura-hero::before { content: ""; position: absolute; inset: 6px; border: 1px solid rgba(185,163,220,.22); }
+.hero .moldura-hero span { position: absolute; color: var(--ouro); font-size: 1.1rem; line-height: 1; background: transparent; }
+.hero .moldura-hero span:nth-child(1) { top: -10px; left: -6px; }
+.hero .moldura-hero span:nth-child(2) { top: -10px; right: -6px; }
+.hero .moldura-hero span:nth-child(3) { bottom: -10px; left: -6px; }
+.hero .moldura-hero span:nth-child(4) { bottom: -10px; right: -6px; }
+.hero .subtitulo { padding: .4rem 1.2rem; border-top: 1px solid rgba(201,165,90,.35); border-bottom: 1px solid rgba(201,165,90,.35); }
+.hero::before { background: radial-gradient(ellipse at 70% 30%, rgba(245,236,200,.16), transparent 50%), radial-gradient(ellipse at 25% 35%, rgba(185,163,220,.16), transparent 45%) !important; }
+
+/* ---------- Cartões: cantoneiras douradas e cores pastéis ---------- */
+.cartao {
+  --tom: var(--lilas);
+  background-image:
+    linear-gradient(var(--ouro), var(--ouro)), linear-gradient(var(--ouro), var(--ouro)),
+    linear-gradient(var(--ouro), var(--ouro)), linear-gradient(var(--ouro), var(--ouro)),
+    linear-gradient(var(--ouro), var(--ouro)), linear-gradient(var(--ouro), var(--ouro)),
+    linear-gradient(var(--ouro), var(--ouro)), linear-gradient(var(--ouro), var(--ouro));
+  background-repeat: no-repeat;
+  background-size: 18px 2px, 2px 18px, 18px 2px, 2px 18px, 18px 2px, 2px 18px, 18px 2px, 2px 18px;
+  background-position: top 3px left 3px, top 3px left 3px, top 3px right 3px, top 3px right 3px,
+                       bottom 3px left 3px, bottom 3px left 3px, bottom 3px right 3px, bottom 3px right 3px;
+  border-top: 3px solid var(--tom);
+}
+.cartoes .cartao:nth-child(4n+1) { --tom: var(--lilas); }
+.cartoes .cartao:nth-child(4n+2) { --tom: var(--pessego); }
+.cartoes .cartao:nth-child(4n+3) { --tom: var(--azul-nevoa); }
+.cartoes .cartao:nth-child(4n+4) { --tom: var(--rosa-antigo); }
+.cartao.com-foto { border-top: 1px solid rgba(201,165,90,.5); }
+.cartao.com-foto .cartao-foto { border-bottom: 3px solid var(--tom); }
+.cartao-runa {
+  display: inline-flex !important; align-items: center; justify-content: center;
+  width: 46px; height: 46px; border-radius: 50%;
+  background: color-mix(in srgb, var(--tom) 28%, transparent);
+  border: 1px solid var(--ouro); box-shadow: 0 0 0 3px color-mix(in srgb, var(--tom) 25%, transparent);
+  font-size: 1.5rem !important; margin-bottom: .8rem !important;
+}
+.cartao h3 { padding-bottom: .5rem; background: linear-gradient(90deg, var(--ouro), transparent 70%) bottom left / 100% 1px no-repeat; }
+.cartao::after { color: var(--tom); opacity: .9; }
+.secao:not(.secao-escura) .cartao { background-color: #fbf7ee; }
+.secao-escura .cartao { background-color: rgba(255,255,255,.03); }
+
+/* ---------- Fotos: cantoneiras e selo ---------- */
+.imagem-placeholder { box-shadow: 18px 18px 0 rgba(185,163,220,.35), -14px -14px 0 rgba(201,165,90,.2) !important; }
+.duas-colunas > div:last-child { position: relative; }
+.duas-colunas > div:last-child::before {
+  content: "ᛃ"; position: absolute; top: -1.6rem; right: 0; color: var(--roxo-suave); font-size: 1.4rem; opacity: .55;
+}
+
+/* ---------- Texto ---------- */
+.destaque { border-left: 0 !important; padding-left: 1.4rem !important; position: relative; }
+.destaque::before { content: ""; position: absolute; left: 0; top: .3em; bottom: .3em; width: 3px; background: linear-gradient(var(--ouro), var(--lilas)); border-radius: 2px; }
+.lista-runa li::before { display: inline-block; width: 1.3rem; text-align: center; }
+.lista-runa li:nth-child(4n+1)::before { content: "ᛉ"; color: var(--ouro); }
+.lista-runa li:nth-child(4n+2)::before { content: "ᚨ"; color: var(--roxo-suave); }
+.lista-runa li:nth-child(4n+3)::before { content: "ᛟ"; color: #c98f62; }
+.lista-runa li:nth-child(4n+4)::before { content: "ᚱ"; color: #6f93b8; }
+.lista-runa li { border-bottom-color: rgba(201,165,90,.3) !important; }
+
+/* ---------- Seção "Sobre" com selos ---------- */
+#sobre .largo { position: relative; padding: 2.5rem 2rem; border: 1px solid rgba(201,165,90,.5); border-radius: 4px; background: rgba(251,247,238,.6); box-shadow: inset 0 0 0 6px rgba(251,247,238,.6), inset 0 0 0 7px rgba(185,163,220,.4); }
+#sobre .largo::before, #sobre .largo::after { position: absolute; top: 50%; transform: translateY(-50%); font-size: 1.6rem; color: var(--ouro); background: #e6dcc4; padding: .2rem .3rem; }
+#sobre .largo::before { content: "ᛟ"; left: -1.1rem; }
+#sobre .largo::after { content: "ᛟ"; right: -1.1rem; }
+
+/* ---------- Agenda e calendário ---------- */
+.calendario, .agenda-proximos { border: 1px solid var(--ouro) !important; box-shadow: inset 0 0 0 5px rgba(251,247,238,.85), inset 0 0 0 6px rgba(185,163,220,.45), 12px 12px 0 rgba(143,166,127,.25) !important; }
+.cal-topo h3, .agenda-proximos h3 { position: relative; }
+.agenda-proximos h3 { padding-bottom: .5rem; background: linear-gradient(90deg, var(--ouro), var(--lilas) 50%, transparent) bottom left / 100% 1px no-repeat; }
+.cal-semana span { color: var(--roxo-suave) !important; font-weight: 600; }
+.cal-dia.sel { background: linear-gradient(160deg, var(--musgo), #4a3f6b) !important; }
+.evento { border-left: 3px solid var(--lilas) !important; }
+
+/* ---------- Formulários ---------- */
+.formulario label { color: inherit; }
+.secao-escura .formulario:not(.formulario-cartao) { box-shadow: inset 0 0 0 5px rgba(0,0,0,.06), inset 0 0 0 6px rgba(185,163,220,.3); }
+.formulario button[type=submit] { background: linear-gradient(90deg, var(--ouro), var(--ouro-claro), var(--ouro)); }
+.formulario input:focus, .formulario select:focus, .formulario textarea:focus { box-shadow: 0 0 0 3px rgba(185,163,220,.35) !important; }
+
+/* ---------- Divisores de flores com tons pastéis ---------- */
+.divisor .f1 { color: var(--roxo-suave) !important; opacity: .45 !important; }
+.divisor .f3 { color: #c98f62 !important; opacity: .4 !important; }
+.divisor .f4 { color: #6f93b8 !important; opacity: .4 !important; }
+
+/* ---------- Rodapé ---------- */
+.rodape h4 { padding-bottom: .4rem; background: linear-gradient(90deg, var(--ouro), var(--lilas) 40%, transparent) bottom left / 70% 1px no-repeat; }
+.rodape-base { border-top: 0 !important; background: linear-gradient(90deg, transparent, var(--ouro), transparent) top / 100% 1px no-repeat; color: var(--ouro-claro); }
+
+/* ---------- Botões ---------- */
+.botao-contorno, .botao-contorno-escuro { border-style: double; border-width: 3px; }
+
+@media (max-width: 760px) {
+  .hero .moldura-hero { inset: 76px 10px 70px; }
+  .faixa-runica { letter-spacing: .3em; font-size: .9rem; }
+  #sobre .largo::before, #sobre .largo::after { display: none; }
+}
+
+/* ---------- Ornamento sutil no topo das seções claras (substitui as vinhas) ---------- */
+#agenda::after, #restaurante::after, .espaco-bloco::after, #reservar-evento::after {
+  height: 30px !important; top: 22px !important; left: 4% !important; right: 4% !important;
+  background:
+    url("../img/ramo.svg") center / 240px 30px no-repeat,
+    linear-gradient(90deg, transparent, rgba(201,165,90,.55) 15%, rgba(201,165,90,.55) 40%, transparent 45%, transparent 55%, rgba(201,165,90,.55) 60%, rgba(201,165,90,.55) 85%, transparent) center 14px / 100% 1px no-repeat,
+    linear-gradient(90deg, transparent, rgba(185,163,220,.45) 20%, rgba(185,163,220,.45) 42%, transparent 46%, transparent 54%, rgba(185,163,220,.45) 58%, rgba(185,163,220,.45) 80%, transparent) center 18px / 100% 1px no-repeat !important;
+  opacity: .9 !important; animation: none !important;
+}
+#agenda, #restaurante { padding-top: 4.2rem; }
+#restaurante .titulo-secao, #agenda .titulo-secao { margin-bottom: 1.4rem; }
+.secao-agenda .centro { margin-top: 0; }
+
+/* ---------- Brilho de fundo das seções claras: cantos suaves, sem quinas ---------- */
+#restaurante::before, #espacos::before {
+  inset: 12px 8px !important; border-radius: 56px;
+  background:
+    radial-gradient(ellipse at 12% 25%, rgba(143,166,127,.20), transparent 45%),
+    radial-gradient(ellipse at 88% 75%, rgba(185,163,220,.16), transparent 45%),
+    radial-gradient(ellipse at 70% 15%, rgba(201,165,90,.10), transparent 40%) !important;
+  -webkit-mask-image: radial-gradient(ellipse 70% 75% at center, #000 60%, transparent 100%);
+          mask-image: radial-gradient(ellipse 70% 75% at center, #000 60%, transparent 100%);
+}
+
+/* ---------- Vagas e valor nos cartões da agenda ---------- */
+.evento-vagas { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .6rem; margin-top: .55rem; }
+.evento-vagas.vazio { display: none; }
+.evento-vagas .vagas { font-size: .8rem; padding: .2rem .65rem; border-radius: 999px; background: rgba(143,166,127,.18); color: var(--musgo); border: 1px solid rgba(143,166,127,.5); }
+.evento-vagas .vagas.poucas { background: rgba(241,201,165,.35); color: #8a5a2e; border-color: var(--pessego); }
+.evento-vagas .vagas.esgotado { background: rgba(227,179,173,.35); color: #8a3f38; border-color: var(--rosa-antigo); }
+.evento-vagas .valor { font-family: "Cormorant Garamond", serif; font-size: 1.15rem; font-weight: 700; color: var(--roxo-suave); padding-left: .6rem; border-left: 1px solid rgba(201,165,90,.6); }
+
+/* ---------- Pop-up ---------- */
+.modal-fundo { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px;
+  background: rgba(18,24,18,.55); backdrop-filter: blur(4px); opacity: 0; transition: opacity .3s; }
+.modal-fundo.aberto { opacity: 1; }
+.modal { position: relative; width: min(440px, 100%); text-align: center; padding: 2.4rem 2rem 2rem; border-radius: 18px;
+  background: linear-gradient(170deg, #fbf7ee, #f1eadb); color: var(--texto); border: 1px solid var(--ouro);
+  box-shadow: inset 0 0 0 6px #fbf7ee, inset 0 0 0 7px rgba(185,163,220,.5), 0 24px 60px rgba(0,0,0,.35);
+  transform: translateY(14px) scale(.97); transition: transform .3s; }
+.modal-fundo.aberto .modal { transform: none; }
+.modal-selo { width: 64px; height: 64px; margin: 0 auto .4rem; display: flex; align-items: center; justify-content: center; color: var(--ouro); }
+.modal-selo svg { width: 100%; height: 100%; }
+.modal-aviso .modal-selo svg { width: 90%; height: auto; }
+.modal-aviso .modal-selo { color: var(--roxo-suave); }
+.modal-runas { margin: 0; color: var(--roxo-suave); letter-spacing: .5em; font-size: .85rem; }
+.modal h3 { font-size: 1.9rem; margin: .4rem 0 .6rem; }
+.modal-texto { margin: 0 0 1.4rem; line-height: 1.6; }
+.modal-texto strong { color: var(--musgo); }

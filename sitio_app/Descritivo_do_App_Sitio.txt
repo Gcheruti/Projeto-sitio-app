@@ -1,0 +1,336 @@
+SÍTIO — APP DA EQUIPE
+DESCRITIVO DE ABAS, PROCESSOS E FUNÇÕES
+Versão do app descrita: 1.0.11 (+12)
+============================================================
+
+Como ler este arquivo
+- É um sumário comentado do aplicativo, para editar e reaproveitar.
+- Nomes exibidos no app: "Casa da Bruxa" = ambiente Tarô no banco; "Cosmória" = ambiente Loja no banco; "Salão" = restaurante.
+- [NÃO CONFIRMADO] marca o que foi lido só de relance no código e deve ser conferido no aparelho.
+- O app é INTERNO da equipe. Não é app de cliente, nem de pedidos públicos.
+
+------------------------------------------------------------
+SUMÁRIO
+ 1. Visão geral e conceitos
+ 2. Acesso: login e tipos de conta
+ 3. Navegação principal (barra inferior)
+ 4. Aba INÍCIO (mapa, notificações, agenda)
+ 5. Aba COMANDAS
+ 6. Aba PEDIDOS (cozinha / preparo)
+ 7. Aba ESTOQUE
+ 8. Aba AJUSTES
+ 9. Reposição de estoque (manual, QR da nota, foto do cupom)
+10. Baixa de estoque
+11. Relatórios
+12. Financeiro
+13. Manutenção de equipe (ADM e Freelancer)
+14. NFC (tags)
+15. Notificações (central de avisos)
+16. Agenda (Geral e Casa da Bruxa)
+17. Validade (lotes) e estoque baixo
+18. Tema do aplicativo
+19. Modo TOTEM
+20. Login COZINHA
+21. Freelancers: diárias, presença e agenda
+22. Alertas só para Adm e registro de atividades
+23. Atualização automática e funcionamento em rede
+24. Banco de dados (Supabase): tabelas e scripts
+25. Fora do escopo / ideias futuras
+26. Pontos a decidir
+27. Permissões por perfil (novo)
+
+============================================================
+1. VISÃO GERAL E CONCEITOS
+============================================================
+1.1 O que é: app Android da equipe do Sítio (restaurante/experiência de ocultismo e bruxaria num sítio). Função principal: gestão de comandas por tags NFC, estoque, pedidos em preparo, agenda, equipe e financeiro.
+1.2 Ambientes do estoque: Salão (restaurante), Loja (Cosmória), Tarô (Casa da Bruxa) e Gruta (aulas, oficinas e serviços).
+1.3 Locais do mapa (chaves internas): restaurante, mercado (Cosmória), casa_bruxa, gruta, spa, estacionamento, espaco_ritual (Espaço Ritualístico), apiario. Os quatro últimos são só de eventos, sem produtos. A Toca dos Coelhos (área residencial) não é local do mapa.
+1.4 Tecnologia: Flutter (lógica) + Supabase (banco). Chave pública (anon) com regras abertas. O código antigo em Kotlin/Compose está congelado, só como referência.
+1.5 Tudo o que a equipe faz fica registrado (quem, o quê, quando) na tabela de atividades.
+
+============================================================
+2. ACESSO: LOGIN E TIPOS DE CONTA
+============================================================
+2.1 Tela de login: título "Sítio", subtítulo "Acesso da equipe", campos Login e Senha, botão Entrar. Mensagens: "Login ou senha incorretos" e erro de conexão.
+2.2 A sessão fica gravada no aparelho até o logout. Ao abrir o app, ele confirma no servidor se a conta ainda existe e está ativa (se foi apagada/desativada, sai sozinho).
+2.3 Senha: guardada como hash (sha256 de "sitio:" + senha). Nunca em texto.
+2.4 Tipos de conta (o que cada um vê é configurável, ver seção 27):
+    - Adm: acesso total (reposição, relatórios, NFC, equipe, financeiro, alertas só-Adm).
+    - Staff: operação do dia a dia (comandas, pedidos, estoque, baixas, notificações, agenda).
+    - Freelancer: login único; o acesso depende do cargo agendado para HOJE (garçom, limpeza, auxílio). Entrar/sair registra presença e diária.
+    - Totem: abre só o mapa do totem (ver seção 19).
+    - Cozinha: abre só "Pedidos em processo" (ver seção 20).
+2.5 O app não permite ficar sem nenhum Adm (não deixa rebaixar o último) e a pessoa não muda o próprio tipo de conta.
+2.6 Logout: Ajustes > "Sair (logout)" (com confirmação). No totem e na cozinha: engrenagem no canto superior esquerdo.
+
+============================================================
+3. NAVEGAÇÃO PRINCIPAL (BARRA INFERIOR)
+============================================================
+Para Adm, Staff e Freelancer, até cinco abas:
+ 1. Início  2. Comandas  3. Pedidos  4. Estoque  5. Ajustes
+- As abas visíveis dependem do perfil e das permissões (seção 27). Ajustes fica sempre visível (é onde está o "Sair").
+Observações:
+- Tag NFC de comanda encostada em qualquer tela abre a comanda (exceto Totem e Cozinha).
+- Faixa de aviso (snackbar) para o Adm quando chega alerta "só Adm" (em até 5 s).
+
+============================================================
+4. ABA INÍCIO
+============================================================
+4.1 Barra superior: título "Sítio"; ícone de agenda no canto superior esquerdo; sino de notificações com contador à direita, que abre direto a central de avisos (seção 15).
+4.2 Cartão "Comandas ativas": número de comandas abertas agora.
+4.3 Mapa do Sítio (imagem ilustrada): bolinhas com número, uma por local que tenha notificações ativas. Tocar na bolinha abre o resumo daquele local. As posições ficam em kPosicoesMapa (inicio_screen.dart).
+4.4 Resumo de notificações (folha inferior): lista as ativas (todas ou só do local), botão "Ver todas" abre a central de avisos.
+4.5 Avisos automáticos gerados por local: "Estoque baixo" (itens abaixo do mínimo) e "Validade próxima" (lotes perto de vencer ou vencidos).
+
+============================================================
+5. ABA COMANDAS
+============================================================
+5.1 Lista de comandas com filtro por texto ("Filtrar por código") e chips de status. Mensagem "Nenhuma comanda encontrada".
+5.2 Nova comanda: botão que pede o Código (ex.: SITIO:010).
+5.3 Detalhe da comanda (toque na comanda ou tag NFC):
+    - Cabeçalho: código, status, forma de pagamento.
+    - Itens: lista com quantidade, preço e botões de aumentar/diminuir. Ao adicionar, o estoque baixa.
+    - Adicionar item: busca nos produtos públicos; opção "Incluir itens internos (não públicos)".
+    - Ícone $ no item: desconto em R$ ou % ("Remover desconto" também). O desconto reduz o total.
+    - Ícone de megafone: Avisos da comanda (caixa de texto livre, ex.: troca de refrigerante).
+    - Vincular NFC: grava o código da comanda numa tag (só Android).
+    - Menu "Mais opções": Excluir comanda (com opção "Devolver os itens ao estoque"; exclusão é lógica, fica no histórico).
+    - Fechar comanda: pede senha; abre a página de fechamento (5.4).
+    - Comanda fechada: "Reabrir comanda (manter itens)" (anula o último fechamento no histórico) e "Resetar comanda (zerar itens)".
+5.5 Fechamento: valor a cobrar editável; forma de pagamento; caixa "Dividir comanda" (2 pessoas, botão + adiciona e divide igual, valores editáveis, a soma precisa bater, cada pessoa com forma e caixa "pago"; só fecha com todos pagos). Guarda cada parte em pagamentos_json.
+5.6 Itens processuais (que passam por preparo) aparecem na aba Pedidos assim que entram na comanda.
+5.7 Cada ação relevante gera registro de atividade; ações de Staff/Freelancer sensíveis geram alerta só-Adm (seção 22).
+
+============================================================
+6. ABA PEDIDOS
+============================================================
+6.1 Um cartão por comanda ativa com itens em andamento. Chip "Incluir finalizados".
+6.2 Etapas por item: Aberto > Em preparo > Finalizado.
+6.3 Tocar no cartão abre folha com cada item e botões de etapa (segmented). Mudança é gravada e registrada.
+6.4 Mensagem "Nenhum pedido em andamento".
+6.5 O login Cozinha usa esta mesma tela com o título "Pedidos em processo" (detalhes serão ajustados depois).
+
+============================================================
+7. ABA ESTOQUE
+============================================================
+7.1 Lista de produtos com nome, quantidade, ambiente e preço. Busca: "Buscar item do estoque".
+7.2 Filtros: ordenar por Nome (A–Z), Mais vendidos (nas comandas), Maior/Menor estoque, Menor/Maior preço; "Somente estoque baixo"; "Somente itens internos (não públicos)"; "Somente preparados no dia"; "Somente produtos processuais"; "Limpar filtros".
+7.3 Abrir um item: Ambiente, Mínimo, Preço; botões "Registrar preparo" (para itens preparados no dia, ver 7.6) e "Editar".
+7.4 Editar: Nome, Quantidade, Mínimo, Preço, Ambiente, Subcategoria, código de barras (campo com "Ler código" pela câmera), Produto processual, Voltado ao público, Controla estoque, "Avisar quantos dias antes" (validade).
+7.5 Novo produto: mesmos campos. Subcategorias dependem do ambiente (ex.: Salão: Bebidas, Drinks, Cervejas, Vinhos, Entradas, Pratos principais, Sobremesas...; Loja: Canecas, Camisetas, Velas, Chás...).
+7.6 Item "preparado no dia" (ex.: pudim): sem mínimo nem alerta de baixo; a quantidade é o que foi preparado e ainda não saiu.
+7.7 Tela Preparo: "Quantas unidades foram preparadas?", lista de ingredientes que saem do estoque (adicionar/remover), confirma e baixa os ingredientes.
+7.8 Estoque baixo: quando quantidade <= mínimo (para itens que controlam estoque), gera aviso no local.
+
+============================================================
+8. ABA AJUSTES
+============================================================
+Cartão da conta (nome, login, tipo) e ícone de paleta (tema). Itens:
+- Reposição (Adm): entrada de mercadoria.
+- Baixa de estoque: validade, perda, consumo interno.
+- Relatórios (Adm).
+- NFC (Adm): ler, gravar e limpar tags.
+- Manutenção de equipe (Adm).
+- Sistema de trocas: "Em manutenção" (desabilitado).
+- Versão do aplicativo: mostra 1.0.11.
+- Cada item acima só aparece se o perfil tiver permissão (seção 27).
+- Sair (logout).
+
+============================================================
+9. REPOSIÇÃO DE ESTOQUE (Adm)
+============================================================
+9.1 Tela Reposição: buscar ou digitar nome do item, informar "Qtd. de entrada"; "Cadastrar produto" se não existir. Mostra o estoque atual. Botão Continuar.
+9.2 Três caminhos de entrada:
+    a) Manual (digitando/escolhendo itens).
+    b) "Ler QR da nota (NFC-e)": abre a página da nota (WebView), lê os itens ("Ler agora"); existe "Copiar código da página (suporte)". Usa a função parse-nfce no Supabase.
+    c) "Ler cupom (foto)": câmera ou galeria, leitura por OCR (só Android); se falhar, "Abrir conferência e preencher à mão".
+9.3 "Notas pendentes de conferência": rascunhos salvos. Tela Conferir nota: texto lido, linhas (Item, Qtd, Unitário, Total), "Buscar no estoque" ou "Tratar como produto novo", remover/desfazer linha, total da nota opcional, "Salvar rascunho", "Confirmar conferência", "Descartar nota?". Correções do usuário são guardadas para melhorar futuras leituras.
+9.4 Revisar reposição: lista das entradas; itens pendentes de cadastro (ícone verde +) precisam ser cadastrados (preço, mínimo, código, ambiente) antes de confirmar. Campo "Valor investido (R$)" obrigatório (> 0).
+9.5 Validade: ao confirmar, abre pop-up por item para informar a data de validade de cada lote (pode pular).
+9.6 Confirmar pede a senha do próprio usuário logado (teclado de texto normal). Resultado: soma ao estoque, cria lote(s), grava a reposição e vai para a aba Estoque.
+9.7 O valor investido entra no financeiro do Sítio como compra de estoque.
+
+============================================================
+10. BAIXA DE ESTOQUE
+============================================================
+Escolher produto, Quantidade, Motivo (validade, perda, consumo interno...), "Registrar baixa", com a senha do usuário logado. A baixa abate o estoque e fica no relatório de estoque. Quantidade inválida é recusada.
+
+============================================================
+11. RELATÓRIOS (Adm)
+============================================================
+Menu: Financeiro | Estoque | Compra | Colaboradores. Todos têm filtro de período e "Exportar (PDF ou CSV)".
+11.1 Financeiro: resumo geral, Sítio (vendas), Cosmória, Toca dos Coelhos (gastos). Totais, pagamentos por forma, entradas e saídas por item, descontos.
+11.2 Estoque: entradas, saídas e itens mais procurados no período (ranking 1º, 2º...).
+11.3 Compra: "Itens baixos no estoque" e "Mais vendidos (alta saída)", com sugestão "Comprar ~N".
+11.4 Colaboradores: tudo o que cada pessoa fez no app, por período (a partir das atividades).
+11.5 "Itens: entradas e saídas": detalhamento por produto.
+
+============================================================
+12. FINANCEIRO (Adm)
+============================================================
+12.1 Hub com quatro abas: Resumo | Sítio | Cosmória | Toca.
+12.2 Resumo: Resultado do período = vendas + outras receitas − estoque comprado − despesas pagas da Toca. Cartões: Vendas (Sítio), Despesas pagas (Toca), A pagar (Toca). Gráficos: "Para onde foi o dinheiro", "Maiores gastos da Toca".
+12.3 Toca dos Coelhos (gastos da casa/administração): navegar por mês; lançar Despesa ou Receita (Categoria, Descrição, Valor, Data, Observação, Pago); editar e excluir (exclusão lógica); "Despesas por categoria".
+12.4 Categorias de despesa: Funcionários (salários), Contratações, Freelancers (diárias), Encargos e impostos, Água, Luz, Internet, Aluguel, Manutenção, Compras e insumos, Marketing, Equipamentos, Outros. Receita: Aporte, Vendas, Serviços, Outros.
+12.5 Contas fixas: cadastro (Categoria, Descrição, Valor estimado, Dia do vencimento, Ativa) e "Gerar contas fixas do mês".
+12.6 Diárias de freelancers entram aqui como despesa na categoria "Freelancers (diárias)" (seção 21).
+
+============================================================
+13. MANUTENÇÃO DE EQUIPE (Adm)
+============================================================
+13.0 Engrenagem no canto superior: abre "Permissões de acesso" (seção 27).
+13.1 Duas abas: ADM (Adm, Staff, Totem, Cozinha) e Freelancer.
+13.2 Aba ADM: lista de cadastros; botão + cria (Nome, Login, Senha, tipo: Staff / Adm / Totem / Cozinha); tocar edita (nova senha opcional). Login é único (sem diferenciar maiúsculas).
+13.3 Aba Freelancer: cada pessoa tem um ícone próprio escolhido no cadastro/edição (cerca de 50 ícones coloridos); lista; botão + (direita) cria freelancer; botão de agenda (esquerda) abre a Agenda dos freelancers (13.5); lápis edita o cadastro; tocar no nome abre a agenda individual (13.4).
+13.4 Agenda individual: calendário do mês, tocar no dia escolhe o cargo (cor do dia), remover dia; ícone de moedas define o valor da diária por cargo (padrão provisório R$ 100).
+13.5 Agenda dos freelancers (todos): calendário com o ícone de cada pessoa em cada dia, na cor do cargo; tocar no dia lista quem vai e se já entrou ("presente"); guia abaixo com as cores e os ícones.
+13.6 Cargos e cores: Equipe de limpeza (azul), Equipe de garçons (vermelho), Auxílio geral (verde).
+
+============================================================
+14. NFC (Adm)
+============================================================
+Ajustes > NFC: campo "Código / payload" (ex.: SITIO:001); "Ler tag", "Gravar código na tag", "Limpar tag" (com senha e confirmação). Só no app Android. Tag de comanda = texto com o código da comanda (ex.: SITIO:010). Alcance de 1–2 cm.
+
+============================================================
+15. NOTIFICAÇÕES (CENTRAL DE AVISOS)
+============================================================
+15.1 Abas Ativas | Inativas; botão para nova notificação (Título, Descrição, Local ou Geral). Filtros por local em chips: Geral, Restaurante, Cosmória, Casa da Bruxa, Gruta, Spa, Estacionamento, Espaço Ritualístico, Apiário. Quem não tem a permissão de editar avisos só lê.
+15.2 Detalhe: editar, ativar/desativar, excluir (exclusão lógica); mostra "Criada por" e "Última edição por".
+15.3 Cada notificação pode ser de um local (aparece na bolinha do mapa) ou geral.
+15.4 Automáticas: "Estoque baixo" e "Validade próxima" por local (se a equipe dispensa e o texto não muda, não reaparece).
+15.5 Alertas só-Adm não aparecem para Staff/Freelancer.
+
+============================================================
+16. AGENDA
+============================================================
+Acesso: ícone de agenda no Início. Duas agendas.
+16.0 Cores e ícones: cada tipo de agendamento tem cor e ícone próprios, configuráveis (tabela agenda_config; script supabase/agenda_config.sql). Agendamentos passados ficam translúcidos.
+16.1 Agenda Geral: calendário mensal com ícones/contagem nos dias com evento (7 cores, 25–50 ícones); tocar no dia abre pop-up com os eventos; lista "Próximos eventos" abaixo; menu de três pontinhos: "Novo agendamento", "Remover agendamento" e "Configurações de agendamentos".
+     Novo agendamento: Título, Tipo (Reunião, Evento, Manutenção, Entrega, Outro), data/hora de início e fim, Local (aparece no mapa do totem), Item cobrado na presença (opcional), Observação.
+16.2 Agenda da Casa da Bruxa: visão do dia por hora em uma área rolável (cerca de meia página) com linha horizontal do horário atual em tempo real, e o calendário do mês abaixo com ícones e contagem por dia; menu ⋮ de configurações (cor/ícone por atendimento); toque numa hora para agendar (Atendimento = itens do estoque da Casa da Bruxa; Duração 30 min a 2 h; Cliente/observação); pressionar e arrastar reagenda; tocar num agendamento mostra detalhes e "Remover".
+16.3 Eventos criados pelo totem trazem comanda e local.
+
+============================================================
+17. VALIDADE (LOTES) E ESTOQUE BAIXO
+============================================================
+17.1 Cada reposição cria lotes (quantidade + validade).
+17.2 Saída FIFO: os lotes não são decrementados; o estoque atual é distribuído do lote mais novo para trás, então sobram os mais antigos.
+17.3 Cada produto tem "Avisar quantos dias antes" (padrão 3). Lotes dentro do prazo ou vencidos geram "Validade próxima" no local do item (texto "VENCIDO" ou "vence dd/mm").
+
+============================================================
+18. TEMA DO APLICATIVO
+============================================================
+Ícone de paleta (Ajustes, engrenagem do totem e da cozinha). Opções: Texturas (Liso, pergaminho, ardósia, concreto, fumaça, linho, papel, pedra) e Coloração (Automático = muda a cada mês; Base = pergaminho claro original; ou um mês/tema específico). O ícone do app também muda por mês (Android).
+
+============================================================
+19. MODO TOTEM
+============================================================
+Conta tipo Totem (computador/tela fixa no sítio, uso pelo visitante).
+19.1 Tela inicial: mapa com bolinhas por local (número = eventos de hoje); botão "Eventos do dia"; ícone de teclado para digitar o código da comanda; engrenagem (Tema e Sair com senha 1234); segurar o título "Sítio" também abre a saída.
+19.2 Tocar numa bolinha: pop-up do local com os eventos do dia e "Marcar presença" (pede a tag NFC; soma o item do evento, se houver, e registra aviso na comanda).
+19.3 Casa da Bruxa: "Agendar atendimento": escolhe atendimento > horário livre de hoje (1 h, sem encavalar, das 07:00 às 22:00) > tag NFC > soma o item na comanda e reserva o horário.
+19.4 Tag NFC no mapa: abre a comanda só para visualização (itens, descontos, agendamentos); botão "Voltar ao mapa" no canto superior direito.
+19.5 Inatividade: comanda 15 s; demais telas 30 s; volta ao mapa com aviso temático por 10 s. Mensagem final de 15 s com botão OK.
+19.6 Atualiza os dados a cada 5 s. Sem notificações.
+19.8 Eventos do dia: lista por hora (9h às 21h), eventos do mesmo horário lado a lado, cartões com a cor/ícone da agenda; botão "Agenda mensal" (calendário com marcas). Só aparecem eventos marcados como "voltado ao público" (coluna publico em agenda_eventos; Reunião/Manutenção/Entrega são internos por padrão; script agenda_publico.sql).
+19.7 Leitor NFC: o app usa o do Android; em computador só código digitado [leitor USB NÃO CONFIRMADO].
+
+============================================================
+20. LOGIN COZINHA
+============================================================
+Conta tipo Cozinha: abre só em "Pedidos em processo" (sem outras abas), atualiza a cada 5 s. Engrenagem no canto superior esquerdo: Tema e Sair (com confirmação). Etapas dos itens como na seção 6. Tags NFC são ignoradas.
+
+============================================================
+21. FREELANCERS: DIÁRIAS, PRESENÇA E AGENDA
+============================================================
+21.1 O Adm agenda o dia e o cargo do freelancer.
+21.2 No login do freelancer NO DIA agendado (1 vez por dia): registra login_em e lança a despesa no financeiro (categoria "Freelancers (diárias)", já paga). No logout grava logout_em. Reabrir o app já logado não conta.
+21.3 O valor vem do valor do cargo no momento do agendamento.
+21.4 Acesso por função (garçom vê Comandas, limpeza vê Avisos...) é ideia futura.
+
+============================================================
+22. ALERTAS SÓ PARA ADM E REGISTRO DE ATIVIDADES
+============================================================
+22.1 Quando Staff/Freelancer dá desconto, tira item, zera/reabre/exclui/fecha comanda ou escreve aviso, cria-se uma notificação só-Adm; quando o Adm faz, não alerta.
+22.2 Atividades registradas: login/logout, comandas (criar, excluir, fechar, reabrir/resetar, itens, desconto, aviso), pedido (etapa), reposição, financeiro, preparo, baixa, produtos, notificações, equipe.
+22.3 Alimenta o relatório de Colaboradores.
+
+============================================================
+23. ATUALIZAÇÃO AUTOMÁTICA E REDE
+============================================================
+23.1 A cada 5 s: recarrega estoque, comandas e notificações (Início/Shell), Totem e Cozinha.
+23.2 Sem rede: o app segue com o que tem e avisa quando não consegue salvar. Cadastros novos usam "fallback" se uma coluna ainda não existir no Supabase.
+23.3 Notificação push (FCM): chega com o app aberto (aparece na bandeja do Android via código nativo), em segundo plano e fechado, no Android. Gatilho no Supabase (pg_net) + Edge Function enviar-push; chave do Firebase só como segredo FIREBASE_SERVICE_ACCOUNT no Supabase (nunca no app); PUSH_SECRET igual no segredo e em push_config.segredo. Script: supabase/push.sql (não rodar inteiro de novo depois de configurar: zera o segredo). Ver doc push-fcm no Projeto.
+23.3a Avisos automáticos (supabase/avisos_programados.sql, usa pg_cron): (1) 30 min antes de cada evento da agenda GERAL (não da Casa da Bruxa) -> adm/staff/freelancer, uma vez por evento; (2) todo dia às 9h (Brasília) grava na central de Avisos "Eventos de hoje (N)" e envia push com a lista, só se houver eventos; (3) estoque baixo: quando um produto que controla estoque cruza o mínimo para baixo -> adm/staff/freelancer/cozinha. Totem nunca recebe push.
+23.3b Ajustes > Notificações (Adm; permissão ajustes_notificacoes): escreve título e descrição e envia na hora a adm/staff/freelancer/cozinha (função enviar_aviso_geral). Canal Android de alta prioridade "sitio_avisos".
+23.4 Ícone do app e ícone de notificação: arte do Sítio (launcher e ícone pequeno de status, com cor própria).
+
+============================================================
+24. BANCO DE DADOS (SUPABASE)
+============================================================
+24.1 Tabelas principais: produtos, comandas, itens_comanda, comandas_historico (vendas fechadas; pagamentos_json), reposicoes e reposicoes_itens, baixas_estoque, lotes, notas_importadas (+itens, +correções), notificacoes (somente_adm, excluida), atividades, usuarios (papel: adm/staff/freelancer/totem/cozinha), freelancer_cargos, freelancer_dias (+ ícone do freelancer), agenda_config, permissoes_perfil, push_config/tokens, agenda_eventos (agenda geral|casa_bruxa, local, comanda_codigo), comanda_avisos, fin_lancamentos, fin_recorrentes.
+24.2 Scripts em supabase/: cursos_site, agenda_publico, atomicidade, avisos_programados, usuarios, financeiro, notificacoes, notificacoes_editor, atividades, notas_importadas, notas_correcoes, pedidos_preparo, produtos_subcategoria, produtos_preparado, lotes_validade, produtos_dias_validade, agenda, freelancers, comandas_v2, totem, cozinha, freelancer_icone, agenda_config, push, permissoes.
+24.3 Dados de teste: 00_zerar_tudo (mantém Adm/Staff), seed_teste, seed_historico, seed_financeiro, seed_novidades.
+24.4 Função parse-nfce (Supabase Functions): leitura da nota fiscal.
+
+============================================================
+25. FORA DO ESCOPO / IDEIAS FUTURAS
+============================================================
+- Hardware: localizador com NFC curto e BLE, vibração tipo pager, props interativas (PN532 + microcontrolador). Nada disso está no app.
+- Sistema de trocas (cupons).
+- Ratear descontos de fechamento entre ambientes.
+- Impressora térmica; mais perfis de totem.
+
+============================================================
+26. PONTOS A DECIDIR
+============================================================
+- Senha das telas sensíveis: usa a senha do usuário logado; a saída do totem ainda usa 1234 [NÃO CONFIRMADO se mudou].
+- Esconder funções por perfil é só no aplicativo (chave anônima com regras abertas): não é barreira de segurança real.
+- Fila de gravação offline: implementada (itens de comanda ficam guardados no aparelho e reenviam quando a rede volta; faixa de aviso no app) [precisa teste em campo].
+- Diária entra como paga no login; valores por cargo são provisórios.
+- Relatórios com pagamento dividido em formas diferentes usam a forma de maior valor.
+- Duração do atendimento no totem fixa em 1 h.
+- Posições das bolinhas no mapa novo precisam de conferência no aparelho.
+
+============================================================
+27. PERMISSÕES POR PERFIL (NOVO)
+============================================================
+27.1 Onde: Ajustes > Manutenção de equipe > engrenagem (Adm). Seletor de perfil no topo: Staff, Freelancer por cargo (garçom, limpeza, auxílio) e "sem função hoje", Cozinha, Totem. Chaves agrupadas: Abas do aplicativo, Início, Agenda, Comandas, Pedidos, Estoque, Ajustes. Botão de restaurar padrão do perfil.
+27.2 O que está desligado fica ESCONDIDO (não só bloqueado). Adm tem sempre acesso total.
+27.3 Padrões: Staff sem reposição, relatórios, NFC, manutenção de equipe, sistema de trocas e cadastro de produto. Garçom: início, comandas (criar, itens, fechar), pedidos, estoque, avisos só leitura. Limpeza: início e avisos. Auxílio: início, comandas (itens), estoque, avisos. Cozinha: só mudar etapa dos pedidos. Totem: nenhuma.
+27.4 Freelancer: o perfil é escolhido sozinho olhando o cargo de hoje em freelancer_dias; mudanças chegam aos aparelhos em até 30 s.
+27.5 Banco: tabela permissoes_perfil (script supabase/permissoes.sql).
+
+============================================================
+28. MELHORIAS DA VERSÃO 1.0.10 (ESTRUTURA E VISUAL)
+============================================================
+28.1 Estoque atômico: funções do banco ajustar_estoque, somar_item_comanda e registrar_item_comanda (supabase/atomicidade.sql, já aplicado) evitam que dois aparelhos sobrescrevam o estoque; se a função faltar, o app usa o caminho antigo.
+28.2 Fila offline: sem rede, adicionar/alterar itens de comanda vai para uma fila no aparelho e sincroniza depois (sem duplicar, via operacoes_aplicadas).
+28.3 NFC e câmera: o app detecta se o aparelho tem NFC, se está desligado (oferece abrir as configurações) e se tem câmera; em computador não bloqueia nada.
+28.4 Visual: sombras, luz ambiente suave, rolagem por mouse/toque, barra lateral (NavigationRail) em telas largas (>=800 px) e conteúdo centralizado até 1100 px (não vale para totem/cozinha).
+28.5 Agenda: pop-up do dia rolável com botão "Adicionar agendamento" fixo; arrastar na Casa da Bruxa mantém os minutos.
+28.6 Pacote Android renomeado para com.tocadoscoelhos.sitio.equipe (usar flutter clean ao atualizar).
+28.7 Alertas só-Adm não vazam mais quando a coluna somente_adm falta (sem fallback).
+
+============================================================
+29. VISUAL TEMÁTICO (VERSÃO 1.0.11) — todas as plataformas, opcional
+============================================================
+29.1 Ajustes > Tema do aplicativo (ícone de paleta): no topo dois interruptores, "Efeitos visuais" (camada animada) e "Cartões de pergaminho" (desligado = cartões comuns com moldura dupla dourada e runa). Abaixo, dois mini menus: "Tema" e "Fundo", cada um com botão de voltar. Tudo fica salvo no aparelho (interruptores ligados por padrão).
+29.2 Tema: Base; Estações (Estações automáticas + Primavera, Verão, Outono, Inverno; hemisfério sul: verão 21/12, outono 20/03, inverno 21/06, primavera 22/09); Luas (Luas automáticas primeiro, depois as 12 luas). Tema Base clareado (bege entre o antigo e o branco; sem tom esverdeado).
+29.3 Fundo: Liso; Estações ("Da estação" + os 4 fundos: pétalas, luz entre folhas, folhas caídas, cristais de gelo; arquivos assets/images/textura_primavera/verao/outono/inverno.jpg); Texturas (pedra, pergaminho, ardósia, fumaça, papel, concreto, linho). Cada fundo é tingido pela cor do tema. Ao escolher um tema de estação, o fundo vira "Da estação" sozinho (dá para trocar depois).
+29.4 Efeitos (widgets/natureza_overlay.dart): poucas folhas caindo (pétalas na primavera, folhas de outono, neve no inverno), brilho de lua (sol no verão, com raios suaves), uma runa/símbolo por vez surgindo e sumindo (~13 s), borboleta de vez em quando na primavera. Coelho: silhueta preta transparente (vetorizada da imagem de referência), cruza a tela a cada 2 min (~7,5 s, 8 saltos com estica/encolhe, pausa para farejar, direção sorteada) e espia por uma borda (esquerda, direita ou embaixo) a cada 1 min (~1,2 s). 4 patinhas andando na mesma direção a cada 40 s. Não recebe toque; desligada se o sistema pedir "sem animações".
+29.5 Cartões de pergaminho (widgets/borda_papel.dart): base uniforme (contorno suave e arredondado, sombra de borda funda, amassado em facetas com vincos, manchas, botão dourado envelhecido com runa no canto superior direito) + variação leve sorteada (liso, queimado, canto arredondado, canto dobrado, mordida suave, ondulado). Queimado: mordida irregular na borda com escurecimento em degradê, filete escuro e cinzas. Cor quase monocromática que acompanha o tema. Cada cartão varia pelo próprio id (função papelCom) em Ajustes, Comandas, Estoque, Pedidos, Notificações, itens da comanda e Reposição; nas demais telas a variação vem do tamanho. Detalhe sazonal em ~40% dos cartões (neve na borda, folha, florzinha, solzinho). Na aba Pedidos cada comanda é uma folha levemente torta.
+29.6 Navegador/computador: cabeçalho de site com menu horizontal (>=800 px), coluna central de até 1240 px, janelas compactas; efeitos e cartões de pergaminho também valem lá.
+29.7 Notificações automáticas e Ajustes > Notificações: ver seção 23.3a/23.3b.
+29.8 Dados de teste da agenda (20/11 a 31/12/2026): 53 eventos gerais (18 internos) e 101 atendimentos da Casa da Bruxa, inseridos direto no Supabase com criado_por = 'Teste'. Eles disparam os avisos automáticos como eventos reais. Para apagar: delete from agenda_eventos where criado_por = 'Teste';
+
+============================================================
+30. CURSOS E EVENTOS: INSCRIÇÕES DO SITE (VERSÃO 1.0.11)
+============================================================
+30.1 O site do Sítio grava os formulários em site.cadastros (schema "site", só inserção). Inscrição em curso (categoria 'curso') ou presença em evento ('evento_presenca') traz referencia_id = id do evento em agenda_eventos e pessoas = quantidade.
+30.2 Gatilho no banco (supabase/cursos_site.sql, já aplicado): para cada inscrição, acha o produto ligado ao evento (agenda_eventos.produto_id) ou, se não houver, procura pelo nome (sem acento e sem o "(3h)" do fim) e tira as vagas: produtos.quantidade -= pessoas (curso = 1). Grava uma linha em public.inscricoes_cursos (evento, produto, quantidade, valor = preço x pessoas, situação). Não copia nome, telefone nem e-mail.
+30.3 Situações: baixado (vagas descontadas), registrado (produto sem controle de estoque), sem_vaga (não havia vagas; estoque não fica negativo), sem_produto (evento sem item no estoque), cancelado. Se o status do cadastro no site virar cancelado/recusado, as vagas voltam. Falha no gatilho nunca impede o site de salvar.
+30.4 Vagas são por produto (todas as turmas juntas), não por data.
+30.5 App: Relatórios > Financeiro ganhou a aba "Cursos e eventos" (itens da Gruta vendidos no app + bloco "Inscrições pelo site" com inscrições válidas, pessoas, valor previsto e situações; também no PDF/CSV). Valor das inscrições é previsto (não é pagamento) e não entra em "Total cobrado".
+30.6 App: Relatórios > Estoque ganhou a seção "Cursos e eventos": por item da Gruta, vendidos no app, inscritos pelo site, total e vagas restantes (também no PDF/CSV).
+30.7 Backup desta versão: Z_Backup/sitio_app_backup_v1.0.11.zip (código, assets, SQL e configs; sem build/.dart_tool).

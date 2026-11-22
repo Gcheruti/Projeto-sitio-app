@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sítio dos Coelhos · Restaurante e Eventos</title>
+  <meta name="description" content="Sítio dos Coelhos: restaurante, eventos e espaços de bruxaria natural em meio à natureza.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Lora:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=20261120b">
+  <link rel="stylesheet" href="css/natureza.css?v=20261120b">
+  <link rel="stylesheet" href="css/polimento.css?v=20261120b">
+  <link rel="stylesheet" href="css/detalhes.css?v=20261120b">
+</head>
+<body>
+
+<!-- Símbolos SVG reutilizáveis -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="pentaculo" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="3"/>
+    <polygon points="50,6 76,86 8,36 92,36 24,86" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="triplice-lua" viewBox="0 0 120 50">
+    <circle cx="60" cy="25" r="18" fill="none" stroke="currentColor" stroke-width="3"/>
+    <path d="M30 7a18 18 0 1 0 0 36a22 22 0 0 1 0-36z" fill="currentColor"/>
+    <path d="M90 7a18 18 0 1 1 0 36a22 22 0 0 0 0-36z" fill="currentColor"/>
+  </symbol>
+  <symbol id="folha" viewBox="0 0 100 100">
+    <path d="M50 95 C50 60 50 40 50 8 M50 70 C30 62 18 48 15 30 C35 34 46 48 50 62 M50 50 C70 42 80 28 84 12 C64 16 54 30 50 44 M50 82 C68 76 80 64 85 50 C68 52 56 62 50 74" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="algiz" viewBox="0 0 40 60"><path d="M20 58V4M20 22L4 4M20 22L36 4" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></symbol>
+  <symbol id="arvore" viewBox="0 0 200 300">
+    <path d="M92 300 L96 190 L70 150 L98 172 L100 120 L104 168 L132 140 L106 196 L110 300 Z" fill="currentColor"/>
+    <circle cx="100" cy="90" r="60" fill="currentColor"/><circle cx="55" cy="130" r="45" fill="currentColor"/>
+    <circle cx="148" cy="125" r="48" fill="currentColor"/><circle cx="100" cy="150" r="40" fill="currentColor"/>
+    <circle cx="70" cy="70" r="35" fill="currentColor"/><circle cx="135" cy="65" r="38" fill="currentColor"/>
+  </symbol>
+  <symbol id="pinheiro" viewBox="0 0 120 300">
+    <path d="M56 300V240H64V300Z M60 0 L20 80 L40 78 L10 150 L35 148 L0 240 L120 240 L85 148 L110 150 L80 78 L100 80 Z" fill="currentColor"/>
+  </symbol>
+  <symbol id="coelho" viewBox="0 0 80 60">
+    <path d="M18 52c-8 0-12-6-10-12 2-8 12-14 26-14 6 0 10 2 13 5l4-14c1-6 3-14 6-14s2 8 0 14l-3 12c2-6 6-12 8-11 3 1-1 9-4 14 4 3 6 7 6 11 0 5-4 7-9 7h-6l3 2H40c-6 0-10-2-12-4l-4 4z" fill="currentColor"/>
+  </symbol>
+  <symbol id="passaro" viewBox="0 0 40 14"><path d="M0 10 Q10 0 20 10 Q30 0 40 10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
+  <symbol id="flor" viewBox="0 0 40 80">
+    <path d="M20 80V30" stroke="currentColor" stroke-width="2"/><path d="M20 55c-10-2-14-10-14-14 8 0 12 6 14 10" fill="currentColor"/>
+    <circle cx="20" cy="18" r="6" fill="currentColor"/><circle cx="12" cy="14" r="7" fill="currentColor"/><circle cx="28" cy="14" r="7" fill="currentColor"/>
+    <circle cx="14" cy="24" r="7" fill="currentColor"/><circle cx="26" cy="24" r="7" fill="currentColor"/><circle cx="20" cy="8" r="7" fill="currentColor"/>
+  </symbol>
+</svg>
+
+<header class="topo">
+  <a href="#inicio" class="marca">
+    <svg class="marca-icone"><use href="#triplice-lua"/></svg>
+    <span>Sítio dos Coelhos</span>
+  </a>
+  <button class="menu-botao" aria-label="Abrir menu" aria-expanded="false">☰</button>
+  <nav class="menu">
+    <a href="#agenda">Agenda</a>
+    <a href="#restaurante">Restaurante</a>
+    <a href="#eventos">Eventos</a>
+    <a href="#espacos">Espaços</a>
+    <a href="#sobre">Sobre</a>
+    <a href="#agendar" class="botao botao-pequeno">Agendar visita</a>
+  </nav>
+</header>
+
+<div class="folhas-caindo" aria-hidden="true"></div>
+<main>
+  <section id="inicio" class="hero">
+    <div class="natureza" aria-hidden="true">
+      <svg class="arv arv-fundo a1"><use href="#pinheiro"/></svg>
+      <svg class="arv arv-fundo a2"><use href="#arvore"/></svg>
+      <svg class="arv arv-fundo a3"><use href="#pinheiro"/></svg>
+      <svg class="arv arv-frente a4"><use href="#arvore"/></svg>
+      <svg class="arv arv-frente a5"><use href="#pinheiro"/></svg>
+      <svg class="arv arv-frente a6"><use href="#arvore"/></svg>
+      <svg class="passaro p1"><use href="#passaro"/></svg>
+      <svg class="passaro p2"><use href="#passaro"/></svg>
+      <svg class="passaro p3"><use href="#passaro"/></svg>
+      <svg class="coelho-anim"><use href="#coelho"/></svg>
+      <div class="grama"></div>
+      <div class="vagalumes"></div>
+    </div>
+    <svg class="hero-selo"><use href="#pentaculo"/></svg>
+    <p class="runas" aria-hidden="true">ᚠ ᚢ ᚦ ᚨ ᚱ ᚲ ᚷ ᚹ</p>
+    <h1>Sítio dos Coelhos</h1>
+    <p class="subtitulo">Sabores da terra, celebrações sob o céu aberto e a magia que nasce da natureza.</p>
+    <div class="acoes">
+      <a href="#restaurante" class="botao">Conheça o restaurante</a>
+      <a href="#agendar" class="botao botao-contorno">Agende sua visita</a>
+    </div>
+  </section>
+
+  <section id="agenda" class="secao secao-agenda">
+    <div class="titulo-secao"><svg><use href="#triplice-lua"/></svg><h2>Agenda</h2></div>
+    <p class="centro">Próximos encontros, cursos e celebrações no sítio.</p>
+    <div class="agenda-grade">
+      <div class="agenda-proximos">
+        <h3>Próximos encontros</h3>
+        <div class="agenda-lista" id="agenda-lista"></div>
+      </div>
+      <div id="calendario"></div>
+    </div>
+    <div class="acoes-secao"><a href="eventos.html" class="botao">Agenda de eventos</a><a href="cursos.html" class="botao botao-contorno-escuro">Agenda de cursos</a></div>
+  </section>
+
+  <section id="restaurante" class="secao">
+    <div class="titulo-secao"><svg><use href="#folha"/></svg><h2>Restaurante</h2></div>
+    <div class="duas-colunas">
+      <div class="imagem-placeholder" data-img="restaurante" role="img" aria-label="Foto do restaurante (a definir)"><svg><use href="#folha"/></svg><span>Foto do restaurante</span></div>
+      <div>
+        <p class="destaque">Uma cozinha que honra a terra, as estações e quem se senta à mesa.</p>
+        <p>Pratos preparados com ingredientes frescos, ervas da nossa horta e receitas que aquecem o corpo e o espírito. Um almoço sem pressa, cercado de verde, para reunir família e amigos.</p>
+        <ul class="lista-runa">
+          <li>Cardápio sazonal inspirado na Roda do Ano</li>
+          <li>Ervas e temperos colhidos no sítio</li>
+          <li>Opções vegetarianas</li>
+          <li>Funcionamento: <em>dias e horários a definir</em></li>
+        </ul>
+        <a href="restaurante.html" class="botao">Marcar um dia</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="divisor" aria-hidden="true">
+    <svg class="f f1"><use href="#flor"/></svg><svg class="f f2"><use href="#flor"/></svg><svg class="arv-d d1"><use href="#arvore"/></svg>
+    <svg class="f f3"><use href="#flor"/></svg><svg class="arv-d d2"><use href="#pinheiro"/></svg><svg class="f f4"><use href="#flor"/></svg>
+  </div>
+
+  <section id="eventos" class="secao secao-escura">
+    <div class="titulo-secao"><svg><use href="#triplice-lua"/></svg><h2>Eventos</h2></div>
+    <p class="centro">Celebre os momentos importantes em um lugar onde a natureza é anfitriã.</p>
+    <div class="cartoes">
+      <article class="cartao"><span class="cartao-runa">ᚷ</span><h3>Casamentos e handfasting</h3><p>Cerimônias tradicionais ou de inspiração pagã, ao ar livre e com toda a estrutura.</p></article>
+      <article class="cartao"><span class="cartao-runa">ᛃ</span><h3>Aniversários e confraternizações</h3><p>Festas intimistas ou grandes reuniões, com o cardápio do nosso restaurante.</p></article>
+      <article class="cartao"><span class="cartao-runa">ᛟ</span><h3>Sabás e celebrações</h3><p>Encontros abertos nas datas da Roda do Ano, como Beltane, Litha e Samhain.</p></article>
+      <article class="cartao"><span class="cartao-runa">ᚱ</span><h3>Eventos corporativos</h3><p>Retiros e encontros de equipe longe da cidade, em contato com a terra.</p></article>
+    </div>
+    <div class="acoes-secao"><a href="eventos.html" class="botao">Ver agenda e reservar</a></div>
+  </section>
+
+  <section id="espacos" class="secao">
+    <div class="titulo-secao"><svg><use href="#pentaculo"/></svg><h2>Nossos espaços</h2></div>
+    <div class="cartoes cartoes-espacos">
+      <article class="cartao com-foto"><div class="cartao-foto" data-img="espaco1"><svg><use href="#folha"/></svg></div><span class="cartao-runa">ᛈ</span><h3>Casa da Bruxa</h3><p>Oráculos e leituras: tarô, búzios, placa radiônica, radiestesia e leitura de cristais.</p></article>
+      <article class="cartao com-foto"><div class="cartao-foto" data-img="espaco2"><svg><use href="#folha"/></svg></div><span class="cartao-runa">ᚨ</span><h3>Gruta</h3><p>Nossa sala de estudos para cursos de ocultismo, magia e bruxaria natural.</p></article>
+      <article class="cartao com-foto"><div class="cartao-foto" data-img="espaco3"><svg><use href="#folha"/></svg></div><span class="cartao-runa">ᛇ</span><h3>Labirinto de Hécate</h3><p>Uma trilha de conexão com a natureza, também usada para rituais.</p></article>
+      <article class="cartao com-foto"><div class="cartao-foto" data-img="espaco4"><svg><use href="#folha"/></svg></div><span class="cartao-runa">ᛉ</span><h3>Espaço de rituais</h3><p>Círculo dedicado às práticas, celebrações e cerimônias.</p></article>
+      <article class="cartao com-foto"><div class="cartao-foto" data-img="espaco5"><svg><use href="#folha"/></svg></div><span class="cartao-runa">ᛊ</span><h3>Cosmória</h3><p>Loja de itens mágicos: velas, incensos, cristais, oráculos, livros e mais.</p></article>
+    </div>
+    <div class="acoes-secao"><a href="espacos.html" class="botao">Conhecer e reservar os espaços</a><a href="cursos.html" class="botao botao-contorno-escuro">Cursos da Gruta</a></div>
+  </section>
+
+  <div class="divisor" aria-hidden="true">
+    <svg class="f f1"><use href="#flor"/></svg><svg class="f f2"><use href="#flor"/></svg><svg class="arv-d d1"><use href="#arvore"/></svg>
+    <svg class="f f3"><use href="#flor"/></svg><svg class="arv-d d2"><use href="#pinheiro"/></svg><svg class="f f4"><use href="#flor"/></svg>
+  </div>
+
+  <section id="sobre" class="secao secao-clara">
+    <div class="titulo-secao"><svg><use href="#algiz"/></svg><h2>Nossa proposta</h2></div>
+    <p class="centro largo">O Sítio dos Coelhos nasceu do desejo de unir boa comida, encontros e espiritualidade em harmonia com a natureza. Aqui, a bruxaria natural é vivida com respeito aos ciclos da terra, às plantas e às pessoas. Venha almoçar, celebrar, aprender ou simplesmente caminhar entre as árvores.</p>
+  </section>
+
+  <div class="divisor" aria-hidden="true">
+    <svg class="f f1"><use href="#flor"/></svg><svg class="f f2"><use href="#flor"/></svg><svg class="arv-d d1"><use href="#arvore"/></svg>
+    <svg class="f f3"><use href="#flor"/></svg><svg class="arv-d d2"><use href="#pinheiro"/></svg><svg class="f f4"><use href="#flor"/></svg>
+  </div>
+
+  <section id="agendar" class="secao secao-escura">
+    <div class="titulo-secao"><svg><use href="#pentaculo"/></svg><h2>Agende sua visita</h2></div>
+    <form data-categoria="visita" class="formulario form-demo" id="form-agendar">
+      <label>Nome<input name="nome" required></label>
+      <label>Telefone ou WhatsApp<input name="telefone" type="tel" required></label>
+      <label>Data desejada<input name="data" type="date" required></label>
+      <label>Número de pessoas<input name="pessoas" type="number" min="1" value="2"></label>
+      <label class="inteiro">Motivo da visita
+        <select name="motivo">
+          <option>Almoço no restaurante</option>
+          <option>Conhecer o espaço para um evento</option>
+          <option>Consulta na Casa da Bruxa</option>
+          <option>Curso na Gruta</option>
+          <option>Visitar a Cosmória</option>
+          <option>Outro</option>
+        </select>
+      </label>
+      <label class="inteiro">Mensagem<textarea name="mensagem" rows="3"></textarea></label>
+      <button class="botao inteiro" type="submit">Enviar pedido</button>
+      <p class="aviso inteiro" hidden>Pedido enviado! Entraremos em contato em breve.</p>
+    </form>
+  </section>
+</main>
+
+<footer class="rodape">
+  <div class="rodape-grade">
+    <div>
+      <svg class="rodape-lua"><use href="#triplice-lua"/></svg>
+      <h4>Sítio dos Coelhos</h4>
+      <p>Restaurante, eventos e bruxaria natural em meio à mata. Endereço, telefone e redes sociais a definir.</p>
+    </div>
+    <div>
+      <h4>Navegue</h4>
+      <a href="restaurante.html">Restaurante</a><a href="eventos.html">Eventos</a><a href="cursos.html">Cursos</a><a href="espacos.html">Espaços</a>
+    </div>
+    <div>
+      <h4>Visite</h4>
+      <p>Dias e horários a definir</p>
+      <a href="index.html#agendar">Agendar visita</a>
+    </div>
+  </div>
+  <p class="rodape-base">ᛉ ᛟ ᛉ &nbsp; Com respeito à terra e aos seus ciclos &nbsp; ᛉ ᛟ ᛉ</p>
+</footer>
+
+<script src="js/conteudo.js?v=20261120b"></script>
+<script src="js/fotos.js?v=20261120b"></script>
+<script src="js/detalhes.js?v=20261120b"></script>
+<script src="js/main.js?v=20261120b"></script>
+<script src="js/config.js?v=20261120b"></script>
+<script src="js/agenda.js?v=20261120b"></script>
+<script src="js/modal.js?v=20261120b"></script>
+<script src="js/envio.js?v=20261120b"></script>
+<script>Agenda.montar({ cal: document.getElementById('calendario'), lista: document.getElementById('agenda-lista'),
+  botao: 'Fazer pré-inscrição',
+  aoEscolher: e => { location.href = (e.cat === 'curso' ? 'cursos.html?evento=' + encodeURIComponent(e.id) + '#inscricao' : 'eventos.html?evento=' + encodeURIComponent(e.id) + '#presenca'); }
+});</script>
+</body>
+</html>

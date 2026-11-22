@@ -1,0 +1,6 @@
+Coloque aqui as imagens da Cosmoria (o site encontra sozinho):
+
+  logo.png (ou logo.jpg)               -> aparece no topo, no lugar da lua
+  vitrine-1.jpg, vitrine-2.jpg ... vitrine-8.jpg  -> fotos que passam no card inicial (aceita .png)
+
+Dica: fotos em pé (retrato) ficam melhores no card em arco.

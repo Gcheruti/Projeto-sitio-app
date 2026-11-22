@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<title>Loja · Portal Cosmoria</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilo.css">
+<link rel="stylesheet" href="css/personalizar.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/comum.js"></script>
+<script src="js/tema.js"></script>
+<script src="js/moldes.js"></script>
+</head>
+<body>
+<div id="topo"></div>
+<main class="wrap">
+  <nav class="trilha" aria-label="Você está em"><a href="index.html">Início</a><span aria-hidden="true">/</span><span id="trilha-atual">Loja</span></nav>
+  <div class="loja">
+    <aside class="filtros" aria-label="Filtros">
+      <div><h3>Categorias</h3><ul id="f-cat"></ul></div>
+      <div><h3>Coleções</h3><ul id="f-col"></ul></div>
+    </aside>
+    <section class="resultados">
+      <div class="barra-res">
+        <div><h1 id="titulo" style="font-size:40px;font-weight:600">Todos os produtos</h1><p class="desc" id="contagem" style="margin:4px 0 0;color:var(--texto-suave)"></p></div>
+        <div class="campo" style="flex-direction:row;align-items:center;gap:8px"><label for="ordem" style="font-weight:600">Ordenar</label>
+          <select id="ordem"><option value="destaque">Destaques</option><option value="novos">Mais novos</option><option value="menor">Menor preço</option><option value="maior">Maior preço</option><option value="nome">Nome (A–Z)</option></select></div>
+      </div>
+      <div id="banner-pers" style="margin-bottom:28px"></div>
+      <div class="grade-prod" id="grade"><p class="carregando">Carregando produtos...</p></div>
+    </section>
+  </div>
+</main>
+<div id="rodape"></div>
+<script>
+document.addEventListener('DOMContentLoaded', async function () {
+  var K = Cosmoria, sb = K.sb, esc = K.esc;
+  var catSlug = K.param('categoria'), colSlug = K.param('colecao'), q = (K.param('q') || '').trim(), ofertas = K.param('ofertas');
+  var ordemSel = document.getElementById('ordem');
+  if (catSlug !== 'personalizados') document.getElementById('banner-pers').innerHTML = K.bannerPersonalizados(true);
+  ordemSel.value = K.param('ordem') || 'destaque';
+
+  function link(extra) {
+    var u = new URLSearchParams();
+    Object.keys(extra).forEach(function (k) { if (extra[k]) u.set(k, extra[k]); });
+    var s = u.toString(); return 'loja.html' + (s ? '?' + s : '');
+  }
+
+  var cats = await sb.from('categorias').select('id,slug,nome,categoria_pai_id').order('ordem');
+  var cols = await sb.from('colecoes').select('id,slug,nome').order('ordem');
+  var grade = document.getElementById('grade');
+  if (cats.error) { grade.innerHTML = '<p class="aviso aviso-erro">' + esc(K.erroAmigavel(cats.error)) + '</p>'; return; }
+
+  var pais = cats.data.filter(function (c) { return !c.categoria_pai_id; });
+  document.getElementById('f-cat').innerHTML = '<li><a href="loja.html"' + (!catSlug && !colSlug && !ofertas ? ' aria-current="true"' : '') + '>Todos</a></li>' + pais.map(function (p) {
+    var filhos = cats.data.filter(function (c) { return c.categoria_pai_id === p.id; });
+    var aberto = catSlug === p.slug || filhos.some(function (f) { return f.slug === catSlug; });
+    return '<li><a href="' + link({ categoria: p.slug }) + '"' + (catSlug === p.slug ? ' aria-current="true"' : '') + '>' + esc(p.nome) + '</a>' +
+      (aberto && filhos.length ? '<ul>' + filhos.map(function (f) { return '<li><a href="' + link({ categoria: f.slug }) + '"' + (catSlug === f.slug ? ' aria-current="true"' : '') + '>' + esc(f.nome) + '</a></li>'; }).join('') + '</ul>' : '') + '</li>';
+  }).join('');
+  if (K.VITRINE) { var fc = document.getElementById('f-col'); if (fc && fc.parentElement) fc.parentElement.hidden = true; }
+  else if (!cols.error) document.getElementById('f-col').innerHTML = cols.data.map(function (c) {
+    return '<li><a href="' + link({ colecao: c.slug }) + '"' + (colSlug === c.slug ? ' aria-current="true"' : '') + '>' + esc(c.nome) + '</a></li>';
+  }).join('');
+
+  var titulo = 'Todos os produtos';
+  // modo vitrine: lê os anúncios do Mercado Livre (vitrine_ml); coleções eram do cadastro antigo e ficam de fora
+  if (K.VITRINE) colSlug = null;
+  var consulta = sb.from(K.TABELA_PRODUTOS).select(K.CAMPOS_CARD + (colSlug ? ',produto_colecoes!inner(colecao_id)' : '')).eq('ativo', true);
+  if (catSlug) {
+    var cat = cats.data.find(function (c) { return c.slug === catSlug; });
+    if (cat) {
+      var ids = [cat.id].concat(cats.data.filter(function (c) { return c.categoria_pai_id === cat.id; }).map(function (c) { return c.id; }));
+      consulta = consulta.in('categoria_id', ids); titulo = cat.nome;
+      var pai = cats.data.find(function (c) { return c.id === cat.categoria_pai_id; });
+      document.getElementById('trilha-atual').innerHTML = (pai ? '<a href="' + link({ categoria: pai.slug }) + '">' + esc(pai.nome) + '</a> / ' : '') + esc(cat.nome);
+    }
+  }
+  if (colSlug && !cols.error) {
+    var col = cols.data.find(function (c) { return c.slug === colSlug; });
+    if (col) { consulta = consulta.eq('produto_colecoes.colecao_id', col.id); titulo = 'Coleção ' + col.nome; document.getElementById('trilha-atual').textContent = titulo; }
+  }
+  if (ofertas) { consulta = consulta.not(K.VITRINE ? 'preco_original_centavos' : 'preco_promocional_centavos', 'is', null); titulo = 'Ofertas'; document.getElementById('trilha-atual').textContent = titulo; }
+  if (q) { consulta = consulta.or('nome.ilike.%' + q.replace(/[%,().*]/g, ' ') + '%,descricao.ilike.%' + q.replace(/[%,().*]/g, ' ') + '%'); titulo = 'Busca: “' + q + '”'; }
+  document.getElementById('titulo').textContent = titulo;
+  document.title = titulo + ' · Portal Cosmoria';
+
+  var r = await consulta;
+  if (r.error) { grade.innerHTML = '<p class="aviso aviso-erro">' + esc(K.erroAmigavel(r.error)) + '</p>'; return; }
+  var lista = r.data;
+
+  function render() {
+    var o = ordemSel.value, l = lista.slice();
+    if (o === 'menor') l.sort(function (a, b) { return (K.precoFinal(a) || 0) - (K.precoFinal(b) || 0); });
+    else if (o === 'maior') l.sort(function (a, b) { return (K.precoFinal(b) || 0) - (K.precoFinal(a) || 0); });
+    else if (o === 'nome') l.sort(function (a, b) { return a.nome.localeCompare(b.nome, 'pt-BR'); });
+    else if (o === 'novos') l.sort(function (a, b) { return b.criado_em < a.criado_em ? -1 : 1; });
+    else l.sort(function (a, b) { return (b.destaque ? 1 : 0) - (a.destaque ? 1 : 0); });
+    document.getElementById('contagem').textContent = l.length + (l.length === 1 ? ' produto' : ' produtos');
+    grade.innerHTML = l.length ? l.map(K.cardProduto).join('') :
+      '<div class="vazio" style="grid-column:1/-1"><span class="emoji" aria-hidden="true">🔮</span><strong>Nenhum produto encontrado</strong><span>Tente outra busca ou veja <a href="loja.html">todos os produtos</a>.</span></div>';
+  }
+  ordemSel.addEventListener('change', render);
+  render();
+});
+</script>
+</body>
+</html>

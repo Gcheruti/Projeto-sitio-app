@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<title>Portal Cosmoria · Artigos místicos e naturais</title>
+<meta name="description" content="Velas, incensos artesanais, cristais, camisetas e artigos místicos e naturais para todos os caminhos.">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilo.css">
+<link rel="stylesheet" href="css/personalizar.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/comum.js"></script>
+<script src="js/tema.js"></script>
+<script src="js/moldes.js"></script>
+</head>
+<body>
+<div id="topo"></div>
+<main>
+  <section class="hero">
+    <span class="deco" id="deco1" style="left:-90px;bottom:-60px;transform:rotate(28deg)"></span>
+    <span class="deco" id="deco2" style="right:-70px;top:-40px;transform:rotate(-150deg)"></span>
+    <div class="wrap hero-in">
+      <div class="hero-txt">
+        <p class="olho" data-texto="inicio_olho">Nova coleção · Ervas da Lua Cheia</p>
+        <h1 data-texto="inicio_titulo">Atravesse o portal e encontre a sua magia</h1>
+        <p class="sub" data-texto="inicio_subtitulo">Velas de cera vegetal, incensos de ervas, cristais da terra e peças com alma mística. Feitos com o que a natureza oferece, para quem pratica e para quem só gosta da estética.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;padding-top:8px">
+          <a class="btn btn-ouro" href="loja.html">Ver a loja</a>
+          <a class="btn btn-linha-clara" href="#colecoes">Explorar coleções</a>
+          <a class="btn btn-linha-clara" href="personalizar.html">✨ Crie a sua peça</a>
+        </div>
+      </div>
+      <div class="hero-arte">
+        <span id="deco3" style="position:absolute;left:0;bottom:10px;transform:rotate(-35deg)"></span>
+        <span id="deco4" style="position:absolute;right:6px;top:30px;transform:rotate(30deg)"></span>
+        <div class="arco" role="img" aria-label="Vela, lua e cristal">🕯️<span style="font-size:56px">🌙 💎</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" style="padding-top:40px" aria-label="Produtos personalizados"><div id="banner-pers"></div></section>
+
+  <div class="wrap divisor" aria-hidden="true"><span></span><svg width="64" height="24" viewBox="0 0 64 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h56"/><path d="M20 12c-3-5-8-7-13-6 2 5 7 7 13 6z"/><path d="M44 12c3-5 8-7 13-6-2 5-7 7-13 6z"/><path d="M26 12c0-5 3-8 6-9 3 1 6 4 6 9"/><circle cx="32" cy="17" r="2"/></svg><span></span></div>
+
+  <section class="wrap secao">
+    <div class="secao-topo"><h2 data-texto="inicio_cat_titulo">O que você procura?</h2><a href="loja.html" style="font-weight:600">Ver todos os produtos</a></div>
+    <div class="grade-cat" id="categorias"><p class="carregando">Carregando categorias...</p></div>
+  </section>
+
+  <section class="wrap secao">
+    <div class="secao-topo"><div><h2 data-texto="inicio_dest_titulo">Destaques do portal</h2><p class="desc" data-texto="inicio_dest_texto">Os favoritos da casa, feitos em pequenos lotes.</p></div><a href="loja.html" style="font-weight:600">Ver tudo</a></div>
+    <div class="grade-prod" id="destaques"><p class="carregando">Carregando produtos...</p></div>
+  </section>
+
+  <section class="wrap secao" id="colecoes" style="padding-bottom:72px">
+    <h2 data-texto="inicio_col_titulo">Escolha a sua energia</h2>
+    <p class="desc" data-texto="inicio_col_texto" style="margin-bottom:28px">Coleções por intenção, por tema e pelos ciclos da natureza, para presentear ou para o seu altar.</p>
+    <div class="grade-col" id="lista-colecoes"></div>
+  </section>
+
+  <section class="vantagens"><div class="wrap">
+    <div><strong data-texto="vant1_titulo">🌿 Feito à mão</strong><span data-texto="vant1_texto">Velas de cera vegetal e incensos de ervas, em pequenos lotes.</span></div>
+    <div><strong data-texto="vant2_titulo">📦 Envio para todo o Brasil</strong><span data-texto="vant2_texto">Embalagem com papel reciclado e código de rastreio por e-mail.</span></div>
+    <div><strong data-texto="vant3_titulo">💳 Pix e cartão</strong><span data-texto="vant3_texto">Desconto no Pix e parcelamento sem juros no cartão.</span></div>
+    <div><strong data-texto="vant4_titulo">🌙 Para todos os caminhos</strong><span data-texto="vant4_texto">Do curioso ao praticante, sem julgamento.</span></div>
+  </div></section>
+
+  <section class="news"><div class="wrap">
+    <span id="deco5"></span>
+    <h2 data-texto="news_titulo">Receba a lua do mês</h2>
+    <p data-texto="news_texto">Lançamentos, rituais simples com ervas e cupons exclusivos, uma vez por lua.</p>
+    <form id="form-news">
+      <label class="sr" for="email-news">Seu e-mail</label>
+      <input id="email-news" type="email" required placeholder="seu@email.com">
+      <button class="btn btn-ouro" type="submit">Quero receber</button>
+    </form>
+    <p id="msg-news" role="status" style="min-height:24px"></p>
+  </div></section>
+</main>
+<div id="rodape"></div>
+<script>
+document.addEventListener('DOMContentLoaded', async function () {
+  var K = Cosmoria, sb = K.sb;
+  document.getElementById('deco1').innerHTML = K.ramo(360);
+  document.getElementById('deco2').innerHTML = K.ramo(260);
+  document.getElementById('deco3').innerHTML = K.ramo(120);
+  document.getElementById('deco4').innerHTML = K.ramo(96);
+  document.getElementById('deco5').innerHTML = K.ramo(56);
+  document.getElementById('banner-pers').innerHTML = K.bannerPersonalizados();
+
+  var cats = await sb.from('categorias').select('slug,nome,icone').is('categoria_pai_id', null).order('ordem');
+  var elC = document.getElementById('categorias');
+  if (cats.error) elC.innerHTML = '<p class="aviso aviso-erro">' + K.esc(K.erroAmigavel(cats.error)) + '</p>';
+  else elC.innerHTML = cats.data.map(function (c) {
+    return '<a class="cat" href="loja.html?categoria=' + encodeURIComponent(c.slug) + '"><div class="cat-img" aria-hidden="true">' + K.esc(c.icone || '✨') + '</div><span>' + K.esc(c.nome) + '</span></a>';
+  }).join('');
+
+  var prods = await sb.from(K.TABELA_PRODUTOS).select(K.CAMPOS_CARD).eq('destaque', true).eq('ativo', true).order('criado_em', { ascending: false }).limit(8);
+  // modo vitrine: sem destaques marcados, mostra os mais novos
+  if (K.VITRINE && !prods.error && !prods.data.length) prods = await sb.from(K.TABELA_PRODUTOS).select(K.CAMPOS_CARD).eq('ativo', true).order('criado_em', { ascending: false }).limit(8);
+  if (K.VITRINE) {
+    // textos padrão da vitrine (se o admin tiver escrito um texto próprio no painel, vale o dele)
+    var padrao = { vant2_titulo: '📦 Entrega pelo Mercado Livre', vant2_texto: 'Frete, prazo e rastreio calculados e garantidos pelo Mercado Livre.',
+      vant3_titulo: '🛡️ Compra protegida', vant3_texto: 'Você finaliza a compra no Mercado Livre, com pagamento seguro e devolução garantida.' };
+    Object.keys(padrao).forEach(function (k) { var e = document.querySelector('[data-texto="' + k + '"]'); if (e && !K.config.textos[k]) e.textContent = padrao[k]; });
+  }
+  var elP = document.getElementById('destaques');
+  if (prods.error) elP.innerHTML = '<p class="aviso aviso-erro">' + K.esc(K.erroAmigavel(prods.error)) + '</p>';
+  else elP.innerHTML = prods.data.map(K.cardProduto).join('');
+
+  // coleções eram do cadastro antigo: escondidas no modo vitrine
+  if (K.VITRINE) { document.getElementById('colecoes').hidden = true; var bc = document.querySelector('a[href="#colecoes"]'); if (bc) bc.style.display = 'none'; }
+  var cols = await sb.from('colecoes').select('slug,nome,descricao').order('ordem');
+  if (!cols.error) document.getElementById('lista-colecoes').innerHTML = cols.data.map(function (c) {
+    return '<a class="col" href="loja.html?colecao=' + encodeURIComponent(c.slug) + '">' + K.ramo(110) + '<b>' + K.esc(c.nome) + '</b><small>' + K.esc(c.descricao || '') + '</small></a>';
+  }).join('');
+
+  document.getElementById('form-news').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var msg = document.getElementById('msg-news'), email = document.getElementById('email-news').value.trim();
+    var r = await sb.from('newsletter').insert({ email: email });
+    if (!r.error || r.error.code === '23505') { msg.textContent = 'Pronto! Você vai receber a próxima lua.'; e.target.reset(); }
+    else msg.textContent = K.erroAmigavel(r.error);
+  });
+});
+</script>
+</body>
+</html>

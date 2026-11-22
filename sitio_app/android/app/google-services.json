@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1026280865537",
+    "project_id": "app-sitio-7c343",
+    "storage_bucket": "app-sitio-7c343.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1026280865537:android:d5314c9e83f43fc9f8a500",
+        "android_client_info": {
+          "package_name": "com.tocadoscoelhos.sitio.equipe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7YwDK7-McO4vjqHdzn6BXOF0jV2Fx460"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

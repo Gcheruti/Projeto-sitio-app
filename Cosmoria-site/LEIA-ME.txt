@@ -1,0 +1,136 @@
+PORTAL COSMORIA - site da loja (versão de desenvolvimento)
+
+=====================================================================
+MODO VITRINE · MERCADO LIVRE (novembro/2026)
+=====================================================================
+O site virou VITRINE: cada produto leva para o anúncio no Mercado Livre e a compra acontece lá
+(mais confiança para o cliente). Liga e desliga em js/config.js > modoVitrine (true = vitrine).
+
+  DESATIVADO (o código continua nos arquivos e volta com modoVitrine: false):
+    - frete (js/frete.js, função calcular-frete, sql/frete.sql), carrinho (carrinho.html mostra um aviso)
+      e checkout; Parcelas/Pix, Frete, Pedidos, Coleções e o cadastro antigo de produtos somem do menu do painel.
+    - O cadastro antigo (tabelas produtos, variantes, produto_imagens) continua no banco, sem uso pela loja.
+      Os personalizados (personalizar.html) continuam usando o cadastro antigo.
+
+  NOVO:
+    - Tabela "Cosmoria".vitrine_ml (sql/vitrine-ml.sql): nome, preço, preço original e desconto, fotos,
+      descrição, características, variações, condição, vendidos, frete grátis, status e link do anúncio.
+    - Função "vitrine-ml" do Supabase (supabase/functions/vitrine-ml/). NÃO é a do frete.
+      Pega o código do link (o MLB... depois de /p/ e o wid=MLB... do anúncio) e lê os dados pela API
+      oficial do Mercado Livre. Sem as chaves, tenta ler a página do anúncio (o ML costuma bloquear).
+    - Painel > "Vitrine (Mercado Livre)": cadastrar pelo link (busca os dados e você revisa antes de salvar),
+      "↻ Atualizar" em cada produto e "↻ Atualizar todos".
+    - Atualização automática todo dia às 6h (horário de Brasília), pelo pg_cron do Supabase
+      (job "cosmoria-vitrine-ml-diaria"). Desligar: select cron.unschedule('cosmoria-vitrine-ml-diaria');
+    - produto.html (js/produto-ml.js): página no visual Cosmoria com botão "Comprar no Mercado Livre".
+    - Produtos de teste: sql/vitrine-teste.sql (exemplo = true). Apagar: delete from "Cosmoria".vitrine_ml where exemplo;
+
+  CHAVES DO MERCADO LIVRE (necessárias para a API):
+    1. Entre em https://developers.mercadolivre.com.br/devcenter com a sua conta do ML e crie uma aplicação.
+    2. URI de redirect: https://cucabiqhtwqlxujgflnq.supabase.co/functions/v1/vitrine-ml
+    3. Copie o Client ID e a Secret Key e cole no painel: Vitrine > "Colar Client ID e Secret Key".
+       Ficam guardadas só no servidor (tabela ajustes_ml, que o site não consegue ler).
+    4. Clique em "Testar conexão". Se o ML pedir, clique em "Autorizar minha conta".
+
+
+PÁGINAS
+  index.html       Início: banner, categorias, destaques, coleções, newsletter
+  loja.html        Loja: lista de produtos com filtro por categoria/subcategoria, coleção, busca e ordenação
+                   ex.: loja.html?categoria=camisetas · loja.html?colecao=lua · loja.html?q=vela · loja.html?ofertas=1
+  produto.html     Produto: ?p=<slug>, com opções (tamanho), estoque, quantidade e "combina com"
+  carrinho.html    Carrinho (fica salvo no navegador), resumo, frete grátis, total no Pix
+  entrar.html      Entrar, criar conta e "esqueci minha senha"
+  nova-senha.html  Página aberta pelo link de recuperação de senha
+  conta.html       Minha conta: dados pessoais, endereço (busca pelo CEP) e pedidos
+  personalizar.html  Editor de personalizados: produto, cor, tamanho, frente/verso, imagens, textos, emojis, formas e pré-valor
+  personalizacoes.html  Artes enviadas pelos clientes, com prévias e arquivos para baixar (você precisa ser admin)
+  admin.html       Painel do administrador (só para contas com papel = 'admin')
+
+  css/estilo.css   Visual do site (cores, fontes, layout)
+  js/config.js     Endereço do Supabase, chave pública e regras da loja (parcelas, desconto Pix, frete grátis, logo)
+  js/comum.js      Topo, rodapé, carrinho e funções usadas por todas as páginas
+
+COMO RODAR LOCALMENTE (dentro desta pasta)
+  python3 -m http.server 8080      -> abra http://localhost:8080
+  (Abrir o arquivo direto com duplo clique não funciona bem: o login precisa de um endereço http://)
+
+BANCO DE DADOS (Supabase, esquema "Cosmoria")
+  Tudo fica no esquema Cosmoria: categorias (com subcategorias), colecoes, produtos, variantes,
+  produto_colecoes, perfis, pedidos, itens_pedido e newsletter.
+  Os produtos de teste têm a coluna exemplo = true. Para apagar todos depois:
+    delete from "Cosmoria".produtos where exemplo;
+
+COMO FUNCIONA O LOGIN
+  - A conta é criada no Supabase Auth (e-mail e senha, com confirmação por e-mail).
+  - A cada login, o site chama a função "Cosmoria".registrar_acesso, que cria a linha do cliente
+    em "Cosmoria".perfis no primeiro acesso e depois atualiza ultimo_acesso e total_acessos.
+  - Cada cliente só consegue ver e editar o próprio perfil e os próprios pedidos (RLS).
+
+AJUSTES NECESSÁRIOS NO PAINEL DO SUPABASE
+  1. Project Settings > Data API > Exposed schemas: adicionar "Cosmoria".
+  2. Authentication > URL Configuration:
+       Site URL: http://localhost:8080 (depois, o domínio real)
+       Redirect URLs: http://localhost:8080/**
+     Sem isso, os links de confirmação de e-mail e de nova senha não voltam para o site.
+
+AINDA FALTA
+  - Checkout e pagamento (Pix e cartão), que criam o pedido no banco.
+  - Logo e fotos reais (hoje os produtos usam emojis como imagem).
+  - Páginas institucionais: sobre, trocas, frete, privacidade e perguntas frequentes.
+
+PRODUTOS PERSONALIZADOS
+  - Banner na página inicial e na loja, link "Personalizados" no menu e convite nas páginas de camisetas, canecas etc.
+  - Produtos personalizáveis = produtos com a coluna modelo_personalizado preenchida (camiseta, babylook, moletom, caneca, ecobag).
+    As cores e tamanhos vêm das variantes (colunas cor, cor_hex e tamanho), com o estoque de cada uma.
+  - Pré-valor: preço do produto + área útil da arte, cobrada por cm², com um valor mínimo por lado.
+    Roupas e ecobag: cada item (imagem, texto, emoji, forma) é medido pelo seu retângulo; itens sobrepostos
+    contam uma vez só e itens separados somam as suas áreas (aparece em dourado no editor).
+    Caneca: mede o retângulo que envolve toda a arte da volta.
+    Valores na tabela "Cosmoria".config_personalizacao (centavos_por_cm2: 10 = R$ 0,10; minimo_por_lado_centavos: 500 = R$ 5,00).
+  - Camadas: painel no estilo Photoshop para reordenar (arrastar ou setas), esconder e travar cada elemento.
+    Camadas escondidas não entram na arte nem no valor.
+    Tamanho real da área de impressão de cada produto: tabela "Cosmoria".moldes_personalizacao.
+  - Áreas de impressão: camiseta, baby look e moletom usam o corpo inteiro da peça, sem as mangas
+    (camiseta 52 × 74 cm, baby look 46 × 65 cm, moletom 58 × 76 cm, frente e costas). Ecobag 30 × 38 cm por lado.
+    Caneca: editor retangular de 20 × 8,6 cm, uma arte só que dá a volta inteira na caneca
+    (as marcas "alça" nas pontas mostram onde fica a alça).
+  - Prévia 3D: abaixo do editor, o produto gira com a arte aplicada (caneca em 3D; roupas e ecobag
+    viram um corpo oval com frente e costas). Dá para arrastar para girar. Arquivo js/previa3d.js.
+    Na caneca 3D fica um vão de cerca de 5 cm sem estampa em volta da alça, como na impressão real.
+  - Página do editor (personalizar.html) é um estúdio 3D: o produto aparece em 3D ocupando a tela (arraste para
+    girar, pince ou use a barrinha da esquerda para aproximar). Barra de cima: desfazer, refazer, pré-valor e "Enviar arte".
+    Menu de baixo: Arte, Produtos, Cores, Fundo e Valor. "Arte" abre a gaveta com as superfícies (Frente/Costas ou
+    Volta inteira), a medida em cm, o quadro de edição e as ferramentas (Imagem, Texto, Emoji, Forma, Camadas).
+    Tudo o que muda no quadro aparece ao vivo no 3D. Item selecionado mostra a lixeira (apaga) e os três pontinhos
+    (abre "Editar"). No computador a gaveta fica à direita; no celular abre de baixo e dá para arrastar a alça.
+    No computador também dá para arrastar uma imagem direto para o quadro.
+  - O 3D usa three.js (js/three.min.js, licença MIT) e js/palco3d.js. A caneca é um modelo de cerâmica com alça;
+    roupas e ecobag ganham volume a partir do desenho da peça. Se o aparelho não tiver WebGL, volta para a prévia simples.
+    Cada produto guarda a sua própria arte (trocar de produto não leva o desenho junto). O rascunho fica no navegador.
+  - Para enviar, o cliente precisa entrar na conta: se não estiver logado, a janela de confirmação mostra
+    "Já tenho conta" e "Criar conta" ali mesmo, sem sair da página.
+  - Ao confirmar, a arte é salva em "Cosmoria".personalizacoes (com o id do cliente) e vai para o carrinho.
+    O gatilho "Cosmoria".avisar_designer chama a função "cosmoria-designer" (Supabase Edge Functions),
+    que manda para o Telegram e para o e-mail: resumo, prévia do produto, arte em PNG para impressão,
+    imagens originais do cliente, textos com fonte, cor e tamanho.
+  - O SQL completo está em supabase/personalizados.sql e o código da função em supabase/functions/cosmoria-designer/.
+  - Para ver as artes em personalizacoes.html, sua conta precisa ter papel = 'admin':
+      update "Cosmoria".perfis set papel = 'admin' where email = 'SEU E-MAIL';
+  - O checkout, quando existir, deve copiar personalizacao_id de cada item do carrinho para itens_pedido.personalizacao_id.
+
+PAINEL DO ADMINISTRADOR (admin.html)
+  - Antes de usar, rode sql/admin.sql no Supabase (SQL Editor > New query > Run) e depois,
+    uma vez só, marque a sua conta como administradora:
+      update "Cosmoria".perfis set papel = 'admin' where email = 'SEU E-MAIL';
+  - Ao entrar (entrar.html) com uma conta admin, o site pergunta se você quer ir para o painel ou para a loja.
+    No topo da loja aparecem os botões "Painel admin" e "Perfis" só para administradores.
+  - O que dá para mudar: produtos (nome, descrição, preço, promoção, fotos, opções/tamanhos/cores, estoque,
+    coleções, mostrar/esconder, destaque, peso e medidas), categorias, coleções, textos do site,
+    parcelas e desconto no Pix, regras e tabela de frete, preço dos personalizados, pedidos (situação e rastreio),
+    newsletter e PERFIS (botão "Perfis" no canto superior direito: lista todas as contas, edita nome, telefone,
+    CPF, nascimento, endereço e novidades, e dá ou tira o acesso de administrador).
+  - Segurança: quem decide é o banco (RLS). Uma conta de cliente não consegue gravar nada disso, mesmo
+    abrindo a página, e não consegue se transformar em admin editando o próprio perfil.
+  - Fotos dos produtos: ficam no banco, já reduzidas pelo navegador (tabela produto_imagens; a capa fica
+    em produtos.imagem). Também dá para usar um link https:// de uma imagem.
+  - Textos: tabela textos_site. Campo vazio = o site usa o texto padrão.

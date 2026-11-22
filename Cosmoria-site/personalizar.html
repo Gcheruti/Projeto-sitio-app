@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<title>Crie o seu personalizado · Portal Cosmoria</title>
+<meta name="description" content="Escolha uma camiseta, caneca, moletom ou ecobag e personalize com suas fotos, frases, emojis e símbolos. Veja o valor na hora.">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=Amatic+SC:wght@400;700&family=Bebas+Neue&family=Caveat:wght@400;700&family=Cinzel:wght@400;700&family=Great+Vibes&family=Lobster&family=Montserrat:ital,wght@0,400;0,700;1,400;1,700&family=Pacifico&family=Permanent+Marker&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Righteous&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilo.css">
+<link rel="stylesheet" href="css/personalizar.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/comum.js"></script>
+<script src="js/tema.js"></script>
+<script src="js/fabric.min.js"></script>
+<script src="js/moldes.js"></script>
+<script src="js/previa3d.js"></script>
+<script src="js/three.min.js"></script>
+<script src="js/palco3d.js"></script>
+<script src="js/personalizar.js"></script>
+</head>
+<body class="app-pers">
+<div class="est" id="app" data-fundo="estudio">
+  <header class="app-topo est-topo">
+    <a class="app-marca" href="index.html" title="Voltar para a loja"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#C9A45C" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/><path d="M17 3.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z"/></svg><span class="app-marca-nome">Portal Cosmoria</span></a>
+    <div class="app-titulo"><span class="app-olho">Crie a sua peça</span><strong id="prod-nome">Escolha o produto</strong></div>
+    <div class="app-acoes">
+      <button type="button" class="icone-acao" id="b-desfazer" title="Desfazer" aria-label="Desfazer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
+      <button type="button" class="icone-acao" id="b-refazer" title="Refazer" aria-label="Refazer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
+      <button type="button" class="icone-acao" id="b-limpar" title="Apagar tudo deste lado" aria-label="Apagar tudo deste lado"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+    </div>
+    <button type="button" class="app-preco" data-abre="valor" title="Ver o pré-valor"><span>Pré-valor</span><strong id="topo-preco">R$ 0,00</strong></button>
+    <button type="button" class="btn btn-ouro app-enviar" id="confirmar" disabled>Adicione algo</button>
+  </header>
+
+  <main class="est-palco" id="editor" aria-label="Seu produto em 3D">
+    <div class="palco3d" id="palco3d"></div>
+    <canvas id="cv-3d" class="previa-simples" aria-label="Prévia do produto girando"></canvas>
+    <p class="aviso aviso-info palco-aviso" id="aviso-edicao" role="status" hidden></p>
+    <p class="aviso aviso-info palco-aviso" id="aviso-rascunho" hidden>Recuperamos o desenho que você estava fazendo. <button type="button" class="link-btn" id="descartar-rascunho">Começar do zero</button></p>
+    <div class="est-zoom" aria-label="Aproximar">
+      <button type="button" id="zoom-mais" aria-label="Aproximar">+</button>
+      <div class="est-zoom-trilho"><input type="range" id="zoom-3d" min="60" max="260" step="1" value="100" aria-label="Zoom do produto"></div>
+      <button type="button" id="zoom-menos" aria-label="Afastar">−</button>
+    </div>
+    <p class="est-dica" id="est-dica">Arraste para girar</p>
+    <button type="button" class="est-editar" data-abre="arte"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg><span>Editar arte</span></button>
+  </main>
+
+  <aside class="gaveta" id="gaveta" aria-label="Opções">
+    <div class="gaveta-alca" id="gaveta-alca" aria-hidden="true"><i></i></div>
+<section class="pn principal pn-arte" data-painel="arte" aria-label="Arte"><div class="pn-corpo arte-corpo"><div class="arte-topo"><div class="opcoes lados" id="lados" role="group" aria-label="Superfície do produto"></div><span class="arte-medida" id="arte-medida"></span><button type="button" class="pn-fechar" data-fecha aria-label="Fechar a arte"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="arte-palco">
+        <div class="quadro" id="quadro"><div class="caixa-canvas" id="caixa-canvas"><canvas id="cv-frente"></canvas><canvas id="cv-verso"></canvas></div></div>
+        <button type="button" class="arte-vazia" id="arte-vazia" hidden><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg><strong>Sua arte vai aqui</strong><span>Toque para enviar uma imagem ou use o +</span></button>
+        <p class="aviso aviso-erro palco-alerta" id="aviso-area" hidden>Parte do desenho está fora da área de impressão (linha tracejada) e será cortada.</p>
+    <div class="mais" id="mais">
+      <div class="mais-menu" id="mais-menu" hidden>
+        <button type="button" data-mais="texto"><span class="mais-ic" aria-hidden="true">T</span><span>Texto</span></button><button type="button" data-mais="imagem"><span class="mais-ic" aria-hidden="true">🖼️</span><span>Imagem</span></button><button type="button" data-mais="emo"><span class="mais-ic" aria-hidden="true">😊</span><span>Emoji</span></button><button type="button" data-mais="for"><span class="mais-ic" aria-hidden="true">⭐</span><span>Forma</span></button>
+      </div>
+      <button type="button" class="mais-btn" id="mais-add" aria-expanded="false" aria-controls="mais-menu" aria-label="Adicionar texto, imagem, emoji ou forma"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+    </div>
+      </div><div class="arte-sub"><section class="pn sub" data-painel="ferr" aria-label="Adicionar"><div class="pn-cabeca"><h2>Adicionar</h2><button type="button" class="pn-fechar" data-fecha aria-label="Fechar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="pn-corpo"><div class="ferr" role="group" aria-label="Adicionar à arte"><button type="button" class="ferr-btn" data-abre="img"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg><span>Imagem</span></button><button type="button" class="ferr-btn" data-abre="txt"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg><span>Texto</span></button><button type="button" class="ferr-btn" data-abre="emo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c1 1.3 2.2 2 3.5 2s2.5-.7 3.5-2M9 9.5h.01M15 9.5h.01"/></svg><span>Emoji</span></button><button type="button" class="ferr-btn" data-abre="for"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.9 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg><span>Forma</span></button><button type="button" class="ferr-btn" data-abre="cam"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Camadas</span></button></div><p class="ed-nota ferr-dica">Arraste para mover. Use as bolinhas dos cantos para aumentar, diminuir ou girar. A lixeira apaga e os três pontinhos abrem as opções.</p></div></section><section class="pn sub" data-painel="img" aria-label="Imagem"><div class="pn-cabeca"><h2>Imagem</h2><button type="button" class="pn-fechar" data-fecha aria-label="Fechar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="pn-corpo"><div id="aba-img" class="pn-pilha"><button type="button" class="btn btn-verde" id="enviar-img" style="width:100%">Enviar imagem da galeria</button>
+          <input type="file" id="arquivo" accept="image/*" hidden>
+          <p class="ed-nota">JPG ou PNG, até 20 MB. PNG com fundo transparente fica melhor na estampa. Use imagens suas ou que você tem direito de usar.</p>
+          <p class="aviso" id="msg-img" role="status" hidden></p></div></div></section><section class="pn sub" data-painel="txt" aria-label="Texto"><div class="pn-cabeca"><h2>Texto</h2><button type="button" class="pn-fechar" data-fecha aria-label="Fechar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="pn-corpo"><div id="aba-txt" class="pn-pilha">
+        <button type="button" class="btn btn-verde" data-add-texto="titulo">Adicionar título</button>
+        <button type="button" class="btn btn-linha" data-add-texto="frase">Adicionar frase</button>
+        <p class="ed-nota">Depois escolha a fonte, o tamanho e a cor em "Editar". Toque duas vezes no texto para escrever direto nele.</p>
+      </div></div></section><section class="pn sub" data-painel="emo" aria-label="Emojis"><div class="pn-cabeca"><h2>Emojis</h2><button type="button" class="pn-fechar" data-fecha aria-label="Fechar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="pn-corpo"><div class="emojis" id="emojis"></div></div></section><section class="pn sub" data-painel="for" aria-label="Formas"><div class="pn-cabeca"><h2>Formas</h2><button type="button" class="pn-fechar" data-fecha aria-label="Fechar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="pn-corpo"><div class="formas" id="formas"></div></div></section><section class="pn sub" data-painel="cam" aria-label="Camadas "><div class="pn-cabeca"><h2>Camadas <span id="cam-lado"></span></h2><button type="button" class="pn-fechar" data-fecha aria-label="Fechar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="pn-corpo"><ul class="camadas" id="camadas"></ul>
+      <p class="ed-nota">A camada de cima fica na frente. Arraste ou use as setas para mudar a ordem. O olho esconde e o cadeado trava.</p></div></section><section class="pn sub" data-painel="editar" aria-label="Editar "><div class="pn-cabeca"><h2>Editar <span id="p-titulo"></span></h2><button type="button" class="pn-fechar" data-fecha aria-label="Fechar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="pn-corpo"><p class="ed-nota" id="sem-selecao">Toque em um elemento do produto para editar.</p>
+<div id="props" hidden>
+          <div id="g-texto" class="ed-grupo">
+            <label class="ed-rotulo" for="p-texto">Texto</label>
+            <textarea id="p-texto" rows="2"></textarea>
+            <label class="ed-rotulo" for="p-fonte">Fonte</label>
+            <select id="p-fonte"></select>
+            <label class="ed-rotulo" for="p-tam">Tamanho da letra</label>
+            <div class="ed-linha"><input type="range" id="p-tam" min="8" max="160" step="1" style="flex:1"><input type="number" id="p-tam-num" class="num" min="8" max="400" step="1" inputmode="numeric" aria-label="Tamanho da letra em número"></div>
+            <div class="ed-linha">
+              <button type="button" class="opcao" id="b-negrito" aria-label="Negrito"><b>N</b></button>
+              <button type="button" class="opcao" id="b-italico" aria-label="Itálico"><i>I</i></button>
+              <button type="button" class="opcao" data-alinhar="left" aria-label="Alinhar à esquerda">⯇</button>
+              <button type="button" class="opcao" data-alinhar="center" aria-label="Centralizar texto">≡</button>
+              <button type="button" class="opcao" data-alinhar="right" aria-label="Alinhar à direita">⯈</button>
+            </div>
+          </div>
+          <div id="g-cor" class="ed-grupo">
+            <label class="ed-rotulo" for="p-cor">Cor</label>
+            <div class="ed-linha"><input type="color" id="p-cor"><div class="cores-mini" id="p-cores"></div></div>
+          </div>
+          <div id="g-contorno" class="ed-grupo">
+            <label class="ed-rotulo" for="p-contorno">Contorno</label>
+            <div class="ed-linha"><input type="range" id="p-contorno" min="0" max="10" step="1" style="flex:1"><input type="color" id="p-contorno-cor" value="#C9A45C" aria-label="Cor do contorno"></div>
+          </div>
+          <div class="ed-grupo">
+            <label class="ed-rotulo" for="p-opac">Transparência</label>
+            <input type="range" id="p-opac" min="10" max="100" step="5">
+          </div>
+          <div class="ed-acoes">
+            <button type="button" id="a-duplicar">Duplicar</button>
+            <button type="button" id="a-centro">Centralizar</button>
+            <button type="button" id="a-espelhar">Espelhar</button>
+            <button type="button" id="a-frente">Trazer p/ frente</button>
+            <button type="button" id="a-tras">Enviar p/ trás</button>
+            <button type="button" id="a-apagar" class="perigo">Apagar</button>
+          </div>
+        </div>
+</div></section></div></div></section>
+<section class="pn principal" data-painel="produto" aria-label="Produtos"><div class="pn-cabeca"><h2>Produtos</h2><button type="button" class="pn-fechar" data-fecha aria-label="Fechar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="pn-corpo"><div class="pers-grade" id="escolha"><p class="carregando">Carregando produtos...</p></div></div></section>
+<section class="pn principal" data-painel="cores" aria-label="Cor e tamanho"><div class="pn-cabeca"><h2>Cor e tamanho</h2><button type="button" class="pn-fechar" data-fecha aria-label="Fechar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="pn-corpo"><p class="ed-nota" id="cores-vazio" hidden>Escolha um produto primeiro.</p><div class="pers-opcoes" id="opcoes-prod" hidden>
+        <p id="estoque" class="ed-nota"></p>
+        <div><span class="ed-rotulo">Cor: <b id="cor-nome"></b></span><div class="cores" id="cores"></div></div>
+        <div id="bloco-tam"><span class="ed-rotulo">Tamanho</span><div class="opcoes" id="tamanhos"></div></div>
+      </div></div></section>
+<section class="pn principal" data-painel="fundo" aria-label="Fundo"><div class="pn-cabeca"><h2>Fundo</h2><button type="button" class="pn-fechar" data-fecha aria-label="Fechar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="pn-corpo"><div class="fundos" id="fundos"><button type="button" class="fundo-btn" data-fundo="estudio" aria-pressed="false"><i class="fundo-estudio"></i><span>Estúdio</span></button><button type="button" class="fundo-btn" data-fundo="creme" aria-pressed="false"><i class="fundo-creme"></i><span>Creme</span></button><button type="button" class="fundo-btn" data-fundo="salvia" aria-pressed="false"><i class="fundo-salvia"></i><span>Sálvia</span></button><button type="button" class="fundo-btn" data-fundo="ceu" aria-pressed="false"><i class="fundo-ceu"></i><span>Céu Cosmoria</span></button><button type="button" class="fundo-btn" data-fundo="roxo" aria-pressed="false"><i class="fundo-roxo"></i><span>Céu roxo</span></button><button type="button" class="fundo-btn" data-fundo="noite" aria-pressed="false"><i class="fundo-noite"></i><span>Noite</span></button></div><p class="ed-nota">O fundo é só para ver a peça. Ele não vai para a impressão.</p></div></section>
+<section class="pn principal" data-painel="valor" aria-label="Pré-valor"><div class="pn-cabeca"><h2>Pré-valor</h2><button type="button" class="pn-fechar" data-fecha aria-label="Fechar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div class="pn-corpo"><div class="ed-preco" aria-live="polite"><ul class="orc">
+          <li><span id="orc-base-nome"></span><strong id="orc-base"></strong></li>
+        </ul>
+        <ul class="orc" id="orc-itens"></ul>
+        <div class="orc-total"><span>Valor de cada peça</span><strong id="orc-unit"></strong></div>
+        <div class="ed-linha" style="justify-content:space-between">
+          <span class="ed-rotulo" style="margin:0">Quantidade</span>
+          <div class="qtd"><button type="button" id="menos" aria-label="Diminuir quantidade">−</button><span id="qtd" aria-live="polite">1</span><button type="button" id="mais" aria-label="Aumentar quantidade">+</button></div>
+        </div>
+        <div class="orc-total grande"><span>Total</span><strong id="orc-total"></strong></div>
+        <span class="parcela" id="orc-pix"></span>
+        <button type="button" class="btn btn-ouro" id="confirmar-2" style="width:100%">Confirmar valor e enviar arte</button>
+        <details class="ed-tabela"><summary>Como o valor é calculado</summary>
+          <p>O valor da personalização depende do espaço que a sua arte ocupa no produto. Cada item (foto, texto, emoji ou forma) é medido pelo retângulo que ocupa. Itens sobrepostos contam uma vez só e itens separados somam as suas áreas (a área dourada no editor). Na caneca, medimos o retângulo que envolve toda a arte:</p>
+          <ul id="tabela-precos"></ul>
+          <p>É um pré-valor. Nosso designer confere a arte e confirma com você antes de produzir.</p>
+        </details></div></div></section>
+  </aside>
+
+  <nav class="est-nav" aria-label="Menu"><div class="est-nav-in"><button type="button" class="nav-btn" data-abre="arte" aria-pressed="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 2-.8 2-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7.5" r="1"/><circle cx="14.5" cy="7.5" r="1"/></svg><span>Arte</span></button><button type="button" class="nav-btn" data-abre="produto" aria-pressed="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3l-5 3 2 5 3-1v11h8V10l3 1 2-5-5-3c-.5 1.5-2 2.5-4 2.5S8.5 4.5 8 3z"/></svg><span>Produtos</span></button><button type="button" class="nav-btn" data-abre="cores" aria-pressed="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11z"/></svg><span>Cores</span></button><button type="button" class="nav-btn" data-abre="fundo" aria-pressed="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/></svg><span>Fundo</span></button><button type="button" class="nav-btn" data-abre="valor" aria-pressed="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v10H3z"/><circle cx="12" cy="12" r="2.5"/><path d="M6 10v4M18 10v4"/></svg><span>Valor</span></button></div></nav>
+</div>
+
+  <section class="sucesso app-sucesso" id="sucesso" hidden>
+    <img id="suc-img" alt="Prévia da sua arte" width="240">
+    <div>
+      <h2>Arte enviada! ✨</h2>
+      <p>Sua peça foi para o carrinho com o pré-valor de <strong id="suc-valor"></strong>. Nosso designer já recebeu a arte e vai conferir os detalhes. Se precisar de algum ajuste, falamos com você pelo contato informado.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:12px">
+        <a class="btn btn-verde" href="carrinho.html">Ver carrinho</a>
+        <a class="btn btn-linha" href="personalizar.html">Criar outra peça</a>
+      </div>
+    </div>
+  </section>
+
+  <dialog id="dlg-confirmar" class="dlg">
+    <form id="form-login" class="form" hidden>
+      <h2 style="font-size:30px">Entre para enviar a arte</h2>
+      <p class="ed-nota" style="font-size:15px">Para salvar a sua peça no carrinho e mandar a arte para o designer, entre na sua conta. Se ainda não tem, crie agora: é rapidinho e a sua arte continua aqui.</p>
+      <div class="ed-abas login-abas" role="tablist">
+        <button type="button" role="tab" id="l-aba-entrar" aria-selected="true">Já tenho conta</button>
+        <button type="button" role="tab" id="l-aba-criar" aria-selected="false">Criar conta</button>
+      </div>
+      <div class="campo" id="l-campo-nome" hidden><label for="l-nome">Seu nome</label><input id="l-nome" autocomplete="name"></div>
+      <div class="campo"><label for="l-email">E-mail</label><input id="l-email" type="email" autocomplete="email" required></div>
+      <div class="campo"><label for="l-senha">Senha</label><input id="l-senha" type="password" autocomplete="current-password" minlength="6" required><small id="l-dica" hidden>Mínimo de 6 caracteres.</small></div>
+      <p class="aviso" id="l-msg" role="status" hidden></p>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center">
+        <a class="link-btn" href="entrar.html?modo=esqueci&amp;voltar=personalizar.html" id="l-esqueci">Esqueci a senha</a>
+        <div style="display:flex;flex-wrap:wrap;gap:10px">
+          <button type="button" class="btn btn-linha" id="l-cancelar">Voltar e editar</button>
+          <button type="submit" class="btn btn-ouro" id="l-enviar">Entrar e continuar</button>
+        </div>
+      </div>
+    </form>
+    <form id="form-confirmar" class="form">
+      <h2 style="font-size:30px">Confirmar e enviar a arte</h2>
+      <p id="conf-resumo" style="margin:0;line-height:1.6"></p>
+      <p class="ed-nota" id="conf-conta"></p>
+      <div class="campo"><label for="c-peca">Nome desta peça</label><input id="c-peca" maxlength="40" required autocomplete="off" placeholder="Ex.: Caneca da vovó, Blusa do aniversário"><small>Aparece no carrinho e para o designer, para saber qual peça é qual.</small></div>
+      <div class="campo"><label for="c-nome">Seu nome</label><input id="c-nome" autocomplete="name" required></div>
+      <div class="campo"><label for="c-contato">WhatsApp ou e-mail</label><input id="c-contato" autocomplete="tel" required><small>O designer usa esse contato se precisar ajustar algo na arte.</small></div>
+      <div class="campo"><label for="c-obs">Observações para o designer (opcional)</label><textarea id="c-obs" rows="3" placeholder="Ex.: quero a frase bem centralizada, a foto pode ser em preto e branco..."></textarea></div>
+      <p class="aviso" id="conf-msg" role="status" hidden></p>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end">
+        <button type="button" class="btn btn-linha" id="conf-cancelar">Voltar e editar</button>
+        <button type="submit" class="btn btn-ouro" id="conf-enviar">Confirmar valor e enviar</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

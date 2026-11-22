@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<title>Nova senha · Portal Cosmoria</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilo.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/comum.js"></script>
+<script src="js/tema.js"></script>
+</head>
+<body>
+<div id="topo"></div>
+<main class="wrap">
+  <div class="caixa">
+    <h1 style="font-size:38px;font-weight:600;text-align:center">Criar nova senha</h1>
+    <form class="form" id="form">
+      <div class="campo"><label for="s1">Nova senha</label><input id="s1" type="password" autocomplete="new-password" minlength="6" required></div>
+      <div class="campo"><label for="s2">Repita a nova senha</label><input id="s2" type="password" autocomplete="new-password" minlength="6" required></div>
+      <button class="btn btn-verde" type="submit">Salvar nova senha</button>
+    </form>
+    <p id="msg" role="alert" class="aviso" hidden></p>
+  </div>
+</main>
+<div id="rodape"></div>
+<script>
+document.addEventListener('DOMContentLoaded', async function () {
+  var K = Cosmoria, sb = K.sb, msg = document.getElementById('msg');
+  function aviso(t, tipo) { msg.className = 'aviso aviso-' + (tipo || 'erro'); msg.textContent = t; msg.hidden = false; }
+  await new Promise(function (r) { setTimeout(r, 400); });
+  var s = await sb.auth.getSession();
+  if (!s.data.session) { aviso('Este link expirou ou já foi usado. Peça um novo em "Esqueci minha senha".'); document.getElementById('form').hidden = true; return; }
+  document.getElementById('form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var a = document.getElementById('s1').value, b = document.getElementById('s2').value;
+    if (a !== b) { aviso('As senhas não são iguais.'); return; }
+    var r = await sb.auth.updateUser({ password: a });
+    if (r.error) { aviso(K.erroAmigavel(r.error)); return; }
+    aviso('Senha alterada! Redirecionando para a sua conta...', 'ok');
+    setTimeout(function () { location.replace('conta.html'); }, 1500);
+  });
+});
+</script>
+</body>
+</html>

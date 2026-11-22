@@ -1,0 +1,22 @@
+# Pastas de backup/referência (não sobem)
+Ref/
+Z_Backup/
+Gruta_backups/
+
+# Build e dependências
+build/
+.dart_tool/
+.gradle/
+node_modules/
+.flutter-plugins-dependencies
+.idea/
+*.iml
+.DS_Store
+
+# Segredos
+.env
+.env.*
+*.jks
+*.keystore
+key.properties
+local.properties

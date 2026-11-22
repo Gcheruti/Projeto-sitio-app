@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<title>Artes personalizadas · Portal Cosmoria</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilo.css">
+<link rel="stylesheet" href="css/personalizar.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/comum.js"></script>
+<script src="js/tema.js"></script>
+</head>
+<body>
+<div id="topo"></div>
+<main class="wrap">
+  <nav class="trilha" aria-label="Você está em"><a href="index.html">Início</a><span aria-hidden="true">/</span><a href="personalizacoes.html">Artes personalizadas</a></nav>
+  <h1 style="font-size:44px;font-weight:600;padding:24px 0 8px" id="titulo">Artes personalizadas</h1>
+  <p class="desc" id="sub" style="margin:0 0 24px;color:var(--texto-suave)">Todas as artes que os clientes enviaram pelo editor. Clique em uma para ver os arquivos e baixar.</p>
+  <div id="conteudo"><p class="carregando">Carregando...</p></div>
+</main>
+<div id="rodape"></div>
+<script>
+document.addEventListener('DOMContentLoaded', async function () {
+  var K = Cosmoria, sb = K.sb, esc = K.esc, el = document.getElementById('conteudo');
+  var STATUS = { no_carrinho: 'Nova (no carrinho)', em_pedido: 'Em pedido', em_producao: 'Em produção', concluida: 'Concluída', descartada: 'Descartada' };
+  var u = await K.usuarioAtual();
+  if (!u) { el.innerHTML = '<div class="vazio"><span class="emoji">🔒</span><strong>Entre na sua conta para ver as artes.</strong><a class="btn btn-verde" href="entrar.html?voltar=' + encodeURIComponent(location.pathname.split('/').pop() + location.search) + '">Entrar</a></div>'; return; }
+  var pf = await sb.from('perfis').select('papel').eq('id', u.id).maybeSingle(), admin = pf.data && pf.data.papel === 'admin';
+  var id = K.param('id');
+  function data(d) { return new Date(d).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }); }
+  function baixar(nome, url, texto) { return url ? '<a class="btn btn-linha" style="min-height:40px;padding:0 16px;font-size:13px" download="' + esc(nome) + '" href="' + esc(url) + '">' + texto + '</a>' : ''; }
+
+  if (!id) {
+    if (!admin) document.getElementById('sub').textContent = 'As artes que você criou no editor.';
+    var r = await sb.from('personalizacoes').select('id,criado_em,produto_nome,variante_nome,cliente_nome,quantidade,preco_total_centavos,status,miniatura,notificado_em').order('criado_em', { ascending: false }).limit(100);
+    if (r.error) { el.innerHTML = '<p class="aviso aviso-erro">' + esc(K.erroAmigavel(r.error)) + '</p>'; return; }
+    if (!r.data.length) { el.innerHTML = '<div class="vazio"><span class="emoji">🎨</span><strong>Nenhuma arte ainda.</strong><a href="personalizar.html">Abrir o editor</a></div>'; return; }
+    el.innerHTML = '<div class="artes">' + r.data.map(function (a) {
+      return '<a class="arte-card" href="personalizacoes.html?id=' + a.id + '">' + (a.miniatura ? '<img src="' + esc(a.miniatura) + '" alt="">' : '') +
+        '<strong>#' + a.id.slice(0, 8).toUpperCase() + ' · ' + esc(a.produto_nome) + '</strong><span style="font-size:13px;color:var(--texto-suave)">' + esc(a.variante_nome || '') + ' · ' + a.quantidade + ' un. · ' + K.reais(a.preco_total_centavos || 0) + '</span>' +
+        '<span style="font-size:13px">' + esc(a.cliente_nome || '') + ' · ' + data(a.criado_em) + '</span><span class="card-cat">' + esc(STATUS[a.status] || a.status) + (a.notificado_em ? ' · designer avisado' : '') + '</span></a>';
+    }).join('') + '</div>';
+    return;
+  }
+
+  var r1 = await sb.from('personalizacoes').select('*').eq('id', id).maybeSingle();
+  if (r1.error || !r1.data) { el.innerHTML = '<p class="aviso aviso-erro">' + esc(r1.error ? K.erroAmigavel(r1.error) : 'Arte não encontrada ou sem permissão para ver.') + '</p>'; return; }
+  var a = r1.data, cod = a.id.slice(0, 8).toUpperCase();
+  document.getElementById('titulo').textContent = 'Arte #' + cod;
+  document.getElementById('sub').textContent = a.produto_nome + ' · ' + (a.variante_nome || '') + ' · enviada em ' + data(a.criado_em);
+  var el2 = a.elementos || [], textos = el2.filter(function (e) { return e.tipo === 'Texto'; }), outros = el2.filter(function (e) { return e.tipo !== 'Texto'; });
+  var cm = function (n) { return String(n).replace('.', ','); };
+  el.innerHTML =
+    '<div class="painel" style="margin-bottom:24px"><table class="tabela">' +
+      '<tr><th>Cliente</th><td>' + esc(a.cliente_nome) + ' · ' + esc(a.cliente_contato) + '</td></tr>' +
+      '<tr><th>Produto</th><td>' + esc(a.produto_nome) + ' · ' + esc(a.variante_nome) + ' · ' + a.quantidade + ' un.</td></tr>' +
+      '<tr><th>Pré-valor</th><td><strong>' + K.reais(a.preco_total_centavos || 0) + '</strong> (base ' + K.reais(a.preco_base_centavos || 0) + ' + personalização ' + K.reais(a.preco_adicional_centavos || 0) + ', por unidade)</td></tr>' +
+      (a.observacoes ? '<tr><th>Observações</th><td>' + esc(a.observacoes) + '</td></tr>' : '') +
+      '<tr><th>Designer avisado</th><td>' + (a.notificado_em ? data(a.notificado_em) : 'ainda não') + '</td></tr>' +
+      '<tr><th>Situação</th><td>' + (admin ? '<select id="status">' + Object.keys(STATUS).map(function (k) { return '<option value="' + k + '"' + (k === a.status ? ' selected' : '') + '>' + STATUS[k] + '</option>'; }).join('') + '</select> <span id="st-msg" style="font-size:13px"></span>' : esc(STATUS[a.status] || a.status)) + '</td></tr>' +
+    '</table></div>' +
+    '<h2 style="font-size:30px;margin-bottom:14px">Prévia e arquivos para impressão</h2><div class="arte-det">' +
+      ['frente', 'verso'].map(function (l) {
+        var nome = l === 'frente' ? 'frente' : 'verso', pv = a['previa_' + l], ar = a['arte_' + l];
+        if (!pv && !ar) return '';
+        return '<figure>' + (pv ? '<img src="' + esc(pv) + '" alt="Prévia ' + nome + '">' : '') + '<figcaption style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><strong style="margin-right:auto">' + (l === 'frente' ? 'Frente' : 'Verso / costas') + '</strong>' +
+          baixar('previa-' + nome + '-' + cod + '.jpg', pv, 'Baixar prévia') + baixar('arte-impressao-' + nome + '-' + cod + '.png', ar, 'Baixar arte (PNG)') + '</figcaption>' +
+          (ar ? '<img src="' + esc(ar) + '" alt="Arte para impressão ' + nome + '">' : '') + '</figure>';
+      }).join('') + '</div>' +
+    ((a.imagens_enviadas || []).length ? '<h2 style="font-size:30px;margin:12px 0 14px">Imagens originais do cliente</h2><div class="arte-det">' + a.imagens_enviadas.map(function (im, i) {
+      return '<figure><img src="' + esc(im.dataUrl) + '" alt=""><figcaption style="display:flex;gap:8px;align-items:center"><span style="margin-right:auto;font-size:13px;overflow-wrap:anywhere">' + esc(im.nome) + '</span>' + baixar((i + 1) + '-' + (im.nome || 'imagem'), im.dataUrl, 'Baixar') + '</figcaption></figure>';
+    }).join('') + '</div>' : '') +
+    (textos.length ? '<h2 style="font-size:30px;margin:12px 0 14px">Textos e fontes</h2><div style="overflow-x:auto"><table class="tabela"><tr><th>#</th><th>Texto</th><th>Fonte</th><th>Cor</th><th>Tamanho</th><th>Lado</th></tr>' + textos.map(function (t) {
+      return '<tr><td>' + t.numero + '</td><td style="white-space:pre-wrap">' + esc(t.texto) + '</td><td>' + esc(t.fonte) + (t.negrito ? ' (negrito)' : '') + (t.italico ? ' (itálico)' : '') + (t.contorno ? '<br><small>contorno ' + esc(t.contorno) + '</small>' : '') + '</td><td><span style="display:inline-block;width:14px;height:14px;border:1px solid #999;vertical-align:middle;background:' + esc(t.cor) + '"></span> ' + esc(t.cor) + '</td><td>' + cm(t.largura_cm) + ' × ' + cm(t.altura_cm) + ' cm</td><td>' + esc(t.lado) + '</td></tr>';
+    }).join('') + '</table></div>' : '') +
+    (outros.length ? '<h2 style="font-size:30px;margin:24px 0 14px">Imagens, emojis e formas</h2><div style="overflow-x:auto"><table class="tabela"><tr><th>#</th><th>Tipo</th><th>Detalhe</th><th>Tamanho</th><th>Posição (centro)</th><th>Lado</th></tr>' + outros.map(function (e) {
+      return '<tr><td>' + e.numero + '</td><td>' + esc(e.tipo) + '</td><td>' + esc(e.arquivo || e.emoji || [e.forma, e.cor].filter(Boolean).join(' ')) + (e.rotacao_graus ? '<br><small>girado ' + e.rotacao_graus + '°</small>' : '') + '</td><td>' + cm(e.largura_cm) + ' × ' + cm(e.altura_cm) + ' cm</td><td>' + cm(e.centro_x_cm) + ' cm da esquerda, ' + cm(e.centro_y_cm) + ' cm do topo</td><td>' + esc(e.lado) + '</td></tr>';
+    }).join('') + '</table></div>' : '') +
+    '<p style="padding:24px 0 72px"><a href="personalizacoes.html">← Todas as artes</a></p>';
+  var st = document.getElementById('status');
+  if (st) st.onchange = async function () {
+    var m = document.getElementById('st-msg'), r2 = await sb.from('personalizacoes').update({ status: st.value }).eq('id', a.id);
+    m.textContent = r2.error ? K.erroAmigavel(r2.error) : 'Salvo ✓';
+  };
+});
+</script>
+</body>
+</html>

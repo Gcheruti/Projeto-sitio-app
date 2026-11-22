@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<title>Arte em 3D · Portal Cosmoria</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--verde:#142219;--creme:#F6F1E7;--ouro:#C9A45C}
+  html,body{height:100%;margin:0;overflow:hidden;font-family:Manrope,system-ui,sans-serif;background:#E9E6DF}
+  .va{position:relative;height:100vh;height:100dvh;background:radial-gradient(120% 90% at 50% 36%,#FDFCFA 0%,#EDEBE6 52%,#D5D2CA 100%)}
+  .va.escuro{background:radial-gradient(120% 90% at 50% 36%,#2F4D3C 0%,#1B3024 55%,#101C14 100%)}
+  #palco{position:absolute;inset:0}
+  .topo{position:absolute;z-index:5;top:12px;left:12px;right:12px;display:flex;align-items:center;gap:12px;padding:10px 12px 10px 18px;border-radius:999px;background:rgba(20,34,25,.93);color:var(--creme);box-shadow:0 10px 30px rgba(20,34,25,.22)}
+  .topo b{font-family:"Cormorant Garamond",serif;font-size:21px;font-weight:600}
+  .topo span{font-size:13px;opacity:.85;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .baixo{position:absolute;z-index:5;left:50%;bottom:18px;transform:translateX(-50%);display:flex;gap:2px;padding:5px;border-radius:999px;white-space:nowrap;background:rgba(20,34,25,.93);box-shadow:0 10px 30px rgba(20,34,25,.25);max-width:calc(100% - 20px);overflow-x:auto}
+  .baixo button,.baixo a{border:0;border-radius:999px;padding:9px 16px;background:transparent;color:#C8D1C8;font:inherit;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none}
+  .baixo [aria-pressed="true"]{background:var(--ouro);color:var(--verde)}
+  .msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;color:var(--verde);font-size:16px}
+  .dica{position:absolute;z-index:4;left:50%;bottom:76px;transform:translateX(-50%);margin:0;padding:6px 14px;border-radius:999px;background:rgba(20,34,25,.6);color:var(--creme);font-size:12px;font-weight:700;pointer-events:none}
+  @media (max-width:520px){.topo{flex-direction:column;align-items:flex-start;gap:2px;border-radius:22px;padding:10px 18px}.topo span{white-space:normal}.baixo button,.baixo a{padding:8px 10px;font-size:12px}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/comum.js"></script>
+<script src="js/moldes.js"></script>
+<script src="js/three.min.js"></script>
+<script src="js/palco3d.js"></script>
+<script src="js/ver-arte.js"></script>
+</head>
+<body>
+<div class="va" id="va">
+  <div id="palco"></div>
+  <div class="topo"><b id="va-codigo">Arte</b><span id="va-produto">Carregando...</span></div>
+  <p class="msg" id="va-msg" hidden></p>
+  <p class="dica" id="va-dica">Arraste para girar · pince para aproximar</p>
+  <div class="baixo" id="va-botoes" hidden>
+    <button type="button" data-lado="frente" aria-pressed="true">Frente</button>
+    <button type="button" data-lado="verso" aria-pressed="false">Costas</button>
+    <button type="button" id="va-fundo" aria-pressed="false">Fundo</button>
+    <a id="va-baixar-f" download>PNG da arte</a>
+    <a id="va-baixar-v" download hidden>PNG costas</a>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<title>Entrar · Portal Cosmoria</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilo.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/comum.js"></script>
+<script src="js/tema.js"></script>
+</head>
+<body>
+<div id="topo"></div>
+<main class="wrap">
+  <div class="caixa">
+    <div style="text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center">
+      <span id="ramo" style="color:var(--verde-folha)"></span>
+      <h1 style="font-size:38px;font-weight:600" id="titulo">Bem-vinda, bem-vindo</h1>
+      <p style="margin:0;color:var(--texto-suave)">Entre para acompanhar pedidos e salvar seus dados de entrega.</p>
+    </div>
+    <div class="abas" role="tablist" aria-label="Acesso">
+      <button role="tab" id="aba-entrar" aria-selected="true" aria-controls="form-entrar">Entrar</button>
+      <button role="tab" id="aba-criar" aria-selected="false" aria-controls="form-criar">Criar conta</button>
+    </div>
+
+    <form class="form" id="form-entrar" role="tabpanel" aria-labelledby="aba-entrar">
+      <div class="campo"><label for="e-email">E-mail</label><input id="e-email" type="email" autocomplete="email" required></div>
+      <div class="campo"><label for="e-senha">Senha</label><input id="e-senha" type="password" autocomplete="current-password" required></div>
+      <button class="btn btn-verde" type="submit">Entrar</button>
+      <button class="link-btn" type="button" id="ir-esqueci" style="align-self:center">Esqueci minha senha</button>
+    </form>
+
+    <form class="form" id="form-criar" role="tabpanel" aria-labelledby="aba-criar" hidden>
+      <div class="campo"><label for="c-nome">Nome</label><input id="c-nome" autocomplete="name" required></div>
+      <div class="campo"><label for="c-email">E-mail</label><input id="c-email" type="email" autocomplete="email" required></div>
+      <div class="campo"><label for="c-senha">Senha</label><input id="c-senha" type="password" autocomplete="new-password" minlength="6" required><small>Mínimo de 6 caracteres.</small></div>
+      <label style="display:flex;gap:10px;align-items:flex-start;font-size:14px"><input type="checkbox" id="c-novidades" style="width:20px;height:20px;margin:0"> Quero receber novidades e cupons por e-mail</label>
+      <button class="btn btn-verde" type="submit">Criar minha conta</button>
+    </form>
+
+    <form class="form" id="form-esqueci" hidden>
+      <p style="margin:0;color:var(--texto-suave)">Informe seu e-mail e enviaremos um link para criar uma nova senha.</p>
+      <div class="campo"><label for="r-email">E-mail</label><input id="r-email" type="email" autocomplete="email" required></div>
+      <button class="btn btn-verde" type="submit">Enviar link</button>
+      <button class="link-btn" type="button" id="voltar-entrar" style="align-self:center">Voltar para o login</button>
+    </form>
+
+    <div id="escolha-admin" hidden style="display:flex;flex-direction:column;gap:12px;text-align:center">
+      <p class="aviso aviso-ok" style="margin:0">Você entrou com uma conta de administrador. 🌿</p>
+      <a class="btn btn-verde" href="admin.html">Abrir o painel do administrador</a>
+      <a class="btn btn-linha" href="conta.html">Continuar como cliente (minha conta)</a>
+      <a href="index.html" style="font-weight:600">Ir para a loja</a>
+    </div>
+
+    <p id="msg" role="alert" class="aviso" hidden></p>
+  </div>
+</main>
+<div id="rodape"></div>
+<script>
+document.addEventListener('DOMContentLoaded', async function () {
+  var K = Cosmoria, sb = K.sb;
+  document.getElementById('ramo').innerHTML = K.ramo(40);
+  var base = location.href.split('?')[0].split('#')[0].replace(/[^/]*$/, '');
+  var voltar = K.param('voltar') || 'conta.html';
+  if (!/^[a-z0-9-]+\.html(\?[^:]*)?$/i.test(voltar)) voltar = 'conta.html';
+  var msg = document.getElementById('msg');
+  function aviso(t, tipo) { msg.className = 'aviso aviso-' + (tipo || 'erro'); msg.textContent = t; msg.hidden = false; }
+  function ocupado(form, sim) { form.querySelectorAll('button,input').forEach(function (e) { e.disabled = sim; }); }
+
+  // Registra o login na tabela Cosmoria.perfis (cria o perfil no primeiro acesso)
+  async function registrar(user, nome, novidades) {
+    var r = await sb.rpc('registrar_acesso', { p_nome: nome || (user.user_metadata && user.user_metadata.nome) || null, p_aceita_novidades: novidades == null ? null : novidades });
+    if (r.error) console.warn('Não foi possível registrar o acesso:', r.error.message);
+  }
+
+  // Administrador escolhe se vai para o painel ou para a loja
+  async function seguir(user) {
+    if (!K.param('voltar') && await K.ehAdmin(user)) {
+      Object.keys(forms).forEach(function (k) { forms[k].hidden = true; });
+      document.querySelector('.abas').hidden = true; msg.hidden = true;
+      document.getElementById('titulo').textContent = 'Para onde você quer ir?';
+      document.getElementById('escolha-admin').hidden = false;
+      return;
+    }
+    location.replace(voltar);
+  }
+
+  var abas = { entrar: document.getElementById('aba-entrar'), criar: document.getElementById('aba-criar') };
+  var forms = { entrar: document.getElementById('form-entrar'), criar: document.getElementById('form-criar'), esqueci: document.getElementById('form-esqueci') };
+  function mostrar(qual) {
+    Object.keys(forms).forEach(function (k) { forms[k].hidden = k !== qual; });
+    abas.entrar.setAttribute('aria-selected', qual === 'entrar'); abas.criar.setAttribute('aria-selected', qual === 'criar');
+    document.querySelector('.abas').hidden = qual === 'esqueci';
+    document.getElementById('titulo').textContent = qual === 'criar' ? 'Crie sua conta' : qual === 'esqueci' ? 'Recuperar senha' : 'Bem-vinda, bem-vindo';
+    msg.hidden = true;
+  }
+  abas.entrar.onclick = function () { mostrar('entrar'); };
+  abas.criar.onclick = function () { mostrar('criar'); };
+  document.getElementById('ir-esqueci').onclick = function () { mostrar('esqueci'); };
+  document.getElementById('voltar-entrar').onclick = function () { mostrar('entrar'); };
+  var modo = K.param('modo'); if (modo === 'criar' || modo === 'esqueci') mostrar(modo); else mostrar('entrar');
+
+  // Quem chega pelo link de confirmação de e-mail já vem com sessão
+  var s = await sb.auth.getSession();
+  if (s.data.session) { await registrar(s.data.session.user); await seguir(s.data.session.user); return; }
+
+
+  forms.entrar.addEventListener('submit', async function (e) {
+    e.preventDefault(); ocupado(this, true);
+    var r = await sb.auth.signInWithPassword({ email: document.getElementById('e-email').value.trim(), password: document.getElementById('e-senha').value });
+    if (r.error) { ocupado(this, false); aviso(K.erroAmigavel(r.error)); return; }
+    await registrar(r.data.user);
+    await seguir(r.data.user);
+  });
+
+  forms.criar.addEventListener('submit', async function (e) {
+    e.preventDefault(); ocupado(this, true);
+    var nome = document.getElementById('c-nome').value.trim(), novidades = document.getElementById('c-novidades').checked;
+    var r = await sb.auth.signUp({ email: document.getElementById('c-email').value.trim(), password: document.getElementById('c-senha').value,
+      options: { data: { nome: nome, aceita_novidades: novidades }, emailRedirectTo: base + 'entrar.html' } });
+    ocupado(this, false);
+    if (r.error) { aviso(K.erroAmigavel(r.error)); return; }
+    if (r.data.session) { await registrar(r.data.user, nome, novidades); location.replace(voltar); return; }
+    this.reset();
+    aviso('Conta criada! Enviamos um link de confirmação para o seu e-mail. Clique nele para ativar a conta e entrar.', 'ok');
+  });
+
+  forms.esqueci.addEventListener('submit', async function (e) {
+    e.preventDefault(); ocupado(this, true);
+    var r = await sb.auth.resetPasswordForEmail(document.getElementById('r-email').value.trim(), { redirectTo: base + 'nova-senha.html' });
+    ocupado(this, false);
+    if (r.error) { aviso(K.erroAmigavel(r.error)); return; }
+    aviso('Se existir uma conta com esse e-mail, você vai receber o link em alguns minutos.', 'ok');
+  });
+});
+</script>
+</body>
+</html>

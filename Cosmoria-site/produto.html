@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<title>Produto · Portal Cosmoria</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilo.css">
+<link rel="stylesheet" href="css/personalizar.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/comum.js"></script>
+<script src="js/tema.js"></script>
+<!-- FRETE DESATIVADO (modo vitrine: entrega pelo Mercado Livre). Para voltar, tire o comentário: <script src="js/frete.js"></script> -->
+<script src="js/produto-ml.js"></script>
+</head>
+<body>
+<div id="topo"></div>
+<main class="wrap">
+  <nav class="trilha" aria-label="Você está em" id="trilha"><a href="index.html">Início</a><span aria-hidden="true">/</span><a href="loja.html">Loja</a></nav>
+  <div id="conteudo"><p class="carregando">Carregando produto...</p></div>
+  <div id="faixa-pers" hidden style="margin-bottom:8px"><a class="faixa-pers" href="personalizar.html"><b>Quer uma peça só sua?</b><span>Crie uma camiseta, moletom, caneca ou ecobag com a sua foto, frase ou símbolo e veja o valor na hora.</span><em>Personalizar ✨</em></a></div>
+  <section class="secao" id="relacionados-box" hidden style="padding-bottom:72px">
+    <h2 style="display:flex;align-items:center;gap:12px;margin-bottom:24px"><span id="ramo-rel" style="color:var(--verde-folha)"></span>Combina com</h2>
+    <div class="grade-prod" id="relacionados"></div>
+  </section>
+</main>
+<div id="rodape"></div>
+<script>
+// Página da LOJA ANTIGA (cadastro próprio + carrinho). DESATIVADA no modo vitrine: quem desenha a página é js/produto-ml.js.
+// Continua aqui para poder voltar (js/config.js > modoVitrine: false).
+document.addEventListener('DOMContentLoaded', async function () {
+  if (window.COSMORIA.modoVitrine) return;
+  var K = Cosmoria, sb = K.sb, esc = K.esc, el = document.getElementById('conteudo');
+  var slug = K.param('p');
+  if (!slug) { location.href = 'loja.html'; return; }
+  var r = await sb.from('produtos').select('*,categoria:categorias(id,nome,slug,categoria_pai_id)').eq('slug', slug).maybeSingle();
+  if (r.error) { el.innerHTML = '<p class="aviso aviso-erro">' + esc(K.erroAmigavel(r.error)) + '</p>'; return; }
+  var p = r.data;
+  if (!p) { el.innerHTML = '<div class="vazio"><span class="emoji" aria-hidden="true">🔮</span><strong>Produto não encontrado</strong><a href="loja.html">Voltar para a loja</a></div>'; return; }
+  if (p.categoria && /camiseta|blusa|moletom|caneca|bolsa/.test(p.categoria.slug)) document.getElementById('faixa-pers').hidden = false;
+  if (p.modelo_personalizado) { location.replace('personalizar.html?p=' + encodeURIComponent(p.slug)); return; }
+  document.title = p.nome + ' · Portal Cosmoria';
+  if (p.categoria) document.getElementById('trilha').insertAdjacentHTML('beforeend', '<span aria-hidden="true">/</span><a href="loja.html?categoria=' + encodeURIComponent(p.categoria.slug) + '">' + esc(p.categoria.nome) + '</a>');
+
+  var fr = await sb.from('produto_imagens').select('imagem,miniatura').eq('produto_id', p.id).order('ordem');
+  var fotos = fr.error ? [] : fr.data;
+  var vr = await sb.from('variantes').select('id,nome,preco_centavos,estoque,ordem').eq('produto_id', p.id).order('ordem');
+  var vars = vr.data || [];
+  var sel = vars.find(function (v) { return v.estoque > 0; }) || vars[0];
+  var qtd = 1, soUma = vars.length === 1 && vars[0].nome === 'Único';
+
+  function preco() { return sel && sel.preco_centavos != null ? sel.preco_centavos : K.precoFinal(p); }
+  function precoCheio() { return sel && sel.preco_centavos != null ? null : (p.preco_promocional_centavos != null ? p.preco_centavos : null); }
+
+  el.innerHTML = '<div class="prod">' +
+    (fotos.length ? '<div class="prod-galeria"><div class="prod-img"><img id="foto-principal" src="' + esc(fotos[0].imagem) + '" alt="' + esc(p.nome) + '">' + (p.selo ? '<span class="selo">' + esc(p.selo) + '</span>' : '') + '</div>' +
+       (fotos.length > 1 ? '<div class="prod-miniaturas" id="miniaturas">' + fotos.map(function (f, i) { return '<button type="button" data-foto="' + i + '" aria-pressed="' + (i === 0) + '" aria-label="Foto ' + (i + 1) + '"><img src="' + esc(f.miniatura || f.imagem) + '" alt=""></button>'; }).join('') + '</div>' : '') + '</div>'
+     : '<div class="prod-img" role="img" aria-label="' + esc(p.nome) + '">' + esc(p.icone || '✨') + (p.selo ? '<span class="selo">' + esc(p.selo) + '</span>' : '') + '</div>') +
+    '<div class="prod-info">' +
+      '<span class="card-cat">' + esc(p.categoria ? p.categoria.nome : '') + '</span>' +
+      '<h1>' + esc(p.nome) + '</h1>' +
+      '<div style="display:flex;flex-direction:column;gap:4px"><span class="preco" id="preco"></span><span class="parcela" id="parcela"></span></div>' +
+      '<p style="margin:0;font-size:16px;line-height:1.7;color:#34443B">' + esc(p.descricao || '') + '</p>' +
+      (soUma ? '' : '<fieldset style="border:0;padding:0;margin:0"><legend style="font-size:14px;font-weight:700;padding:0 0 10px">Opção: <span id="var-nome"></span></legend><div class="opcoes" id="opcoes"></div></fieldset>') +
+      '<p id="estoque" style="margin:0;font-size:14px;color:var(--texto-suave)"></p>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:12px">' +
+        '<div class="qtd"><button type="button" id="menos" aria-label="Diminuir quantidade">−</button><span id="qtd" aria-live="polite">1</span><button type="button" id="mais" aria-label="Aumentar quantidade">+</button></div>' +
+        '<button class="btn btn-verde" type="button" id="adicionar" style="flex:1 1 220px;min-height:52px">Adicionar ao carrinho</button>' +
+      '</div>' +
+      '<p id="ok" role="status" class="aviso aviso-ok" hidden>Produto adicionado. <a href="carrinho.html">Ver carrinho</a></p>' +
+      '<div style="border-top:1px solid var(--salvia-borda)">' +
+        (p.como_usar ? '<details><summary>Como usar</summary><p>' + esc(p.como_usar) + '</p></details>' : '') +
+        (p.composicao ? '<details><summary>Composição</summary><p>' + esc(p.composicao) + '</p></details>' : '') +
+        '<details><summary>Trocas e envio</summary><p data-texto="produto_trocas">Postagem em até 2 dias úteis após a confirmação do pagamento. Trocas em até 7 dias após o recebimento. (Texto de exemplo.)</p></details>' +
+      '</div>' +
+    '</div></div>';
+
+  K.aplicarTextos(el);
+  var mini = document.getElementById('miniaturas');
+  if (mini) mini.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-foto]'); if (!b) return;
+    document.getElementById('foto-principal').src = fotos[+b.dataset.foto].imagem;
+    mini.querySelectorAll('[data-foto]').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
+  });
+
+  function atualizar() {
+    var c = precoCheio();
+    document.getElementById('preco').innerHTML = (c != null ? '<s>' + K.reais(c) + '</s>' : '') + K.reais(preco());
+    document.getElementById('parcela').textContent = K.reais(Math.round(preco() * (1 - K.config.descontoPix))) + ' no Pix · ' + K.parcela(preco());
+    var est = sel ? sel.estoque : 0;
+    document.getElementById('estoque').textContent = est <= 0 ? 'Esgotado' : (est <= 5 ? 'Últimas ' + est + ' unidades' : 'Em estoque');
+    if (qtd > est) qtd = Math.max(1, est);
+    document.getElementById('qtd').textContent = qtd;
+    document.getElementById('adicionar').disabled = est <= 0;
+    document.getElementById('adicionar').textContent = est <= 0 ? 'Esgotado' : 'Adicionar ao carrinho';
+    if (!soUma) {
+      document.getElementById('var-nome').textContent = sel ? sel.nome : '';
+      document.getElementById('opcoes').innerHTML = vars.map(function (v) {
+        return '<button type="button" class="opcao" data-id="' + v.id + '" aria-pressed="' + (sel && v.id === sel.id) + '"' + (v.estoque <= 0 ? ' disabled' : '') + '>' + esc(v.nome) + '</button>';
+      }).join('');
+    }
+  }
+  if (!soUma) document.getElementById('opcoes').addEventListener('click', function (e) {
+    var b = e.target.closest('.opcao'); if (!b || b.disabled) return;
+    sel = vars.find(function (v) { return String(v.id) === b.dataset.id; }); qtd = 1;
+    document.getElementById('ok').hidden = true; atualizar();
+  });
+  document.getElementById('menos').onclick = function () { qtd = Math.max(1, qtd - 1); atualizar(); };
+  document.getElementById('mais').onclick = function () { if (sel && qtd < sel.estoque) qtd++; atualizar(); };
+  document.getElementById('adicionar').onclick = function () {
+    if (!sel) return;
+    K.adicionarAoCarrinho({ variante_id: sel.id, produto_id: p.id, slug: p.slug, nome: p.nome, variante: soUma ? '' : sel.nome, preco: preco(), qtd: qtd, icone: p.icone, miniatura: p.imagem || undefined, estoque: sel.estoque });
+    document.getElementById('ok').hidden = false;
+  };
+  atualizar();
+
+  if (p.categoria_id) {
+    var rel = await sb.from('produtos').select(K.CAMPOS_CARD).eq('categoria_id', p.categoria_id).eq('ativo', true).neq('id', p.id).limit(4);
+    var lista = rel.data || [];
+    if (lista.length < 4) {
+      var mais = await sb.from('produtos').select(K.CAMPOS_CARD).eq('destaque', true).eq('ativo', true).neq('id', p.id).limit(8);
+      (mais.data || []).forEach(function (x) { if (lista.length < 4 && !lista.some(function (y) { return y.id === x.id; })) lista.push(x); });
+    }
+    if (lista.length) {
+      document.getElementById('ramo-rel').innerHTML = K.ramo(34);
+      document.getElementById('relacionados').innerHTML = lista.map(K.cardProduto).join('');
+      document.getElementById('relacionados-box').hidden = false;
+    }
+  }
+});
+</script>
+</body>
+</html>

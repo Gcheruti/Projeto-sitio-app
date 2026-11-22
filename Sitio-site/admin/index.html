@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Administração · Sítio dos Coelhos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&family=Lora:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --musgo:#2f3e2c; --escuro:#1d2a1c; --ouro:#c9a55a; --perg:#f3ecdc; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Lora",serif; background:var(--escuro); color:var(--perg); height:100vh; }
+    h1 { font-family:"Cormorant Garamond",serif; margin:0; }
+    .login { height:100vh; display:flex; align-items:center; justify-content:center; padding:16px; }
+    .login form { background:var(--musgo); padding:2.5rem; border-radius:14px; border:1px solid var(--ouro); width:min(360px,100%); display:flex; flex-direction:column; gap:1rem; }
+    .login .runa { text-align:center; font-size:2.4rem; color:var(--ouro); }
+    input { padding:.7rem; border-radius:8px; border:1px solid #8fa67f; background:var(--perg); font:inherit; width:100%; margin-top:.3rem; }
+    button, .btn { background:var(--ouro); color:var(--escuro); border:0; border-radius:999px; padding:.55rem 1.1rem; font:inherit; font-weight:600; cursor:pointer; text-decoration:none; }
+    .btn-sec { background:transparent; color:var(--perg); border:1px solid var(--ouro); }
+    .erro { color:#f0a08a; min-height:1.2em; margin:0; }
+    .painel { display:none; height:100vh; flex-direction:column; }
+    .barra { display:flex; flex-wrap:wrap; gap:.6rem; align-items:center; padding:.7rem 1rem; background:var(--musgo); border-bottom:1px solid var(--ouro); }
+    .barra h1 { font-size:1.4rem; margin-right:auto; }
+    .barra label { display:flex; align-items:center; gap:.3rem; font-size:.85rem; }
+    .barra input[type=color] { width:34px; height:28px; padding:0; margin:0; border:0; background:none; }
+    .status { font-size:.85rem; color:#b8cfa8; }
+    .dica { padding:.4rem 1rem; font-size:.85rem; background:#26351f; }
+    iframe { flex:1; border:0; width:100%; background:#fff; }
+    .logado .login { display:none; } .logado .painel { display:flex; }
+  </style>
+</head>
+<body>
+  <section class="login">
+    <form id="form-login">
+      <div class="runa">ᛉ</div>
+      <h1>Área do administrador</h1>
+      <label>Usuário<input name="usuario" autocomplete="username" required></label>
+      <label>Senha<input name="senha" type="password" autocomplete="current-password" required></label>
+      <p class="erro" id="erro"></p>
+      <button type="submit">Entrar</button>
+    </form>
+  </section>
+
+  <section class="painel">
+    <div class="barra">
+      <h1>Editor do site</h1>
+      <label>Página<select id="pagina" style="padding:.3rem;border-radius:6px">
+        <option value="index.html">Início</option><option value="restaurante.html">Restaurante</option>
+        <option value="eventos.html">Eventos</option><option value="cursos.html">Cursos</option><option value="espacos.html">Espaços</option></select></label>
+      <span class="status" id="status">Pronto</span>
+      <label>Verde<input type="color" data-cor="--musgo" value="#2f3e2c"></label>
+      <label>Verde escuro<input type="color" data-cor="--musgo-escuro" value="#1d2a1c"></label>
+      <label>Dourado<input type="color" data-cor="--ouro" value="#c9a55a"></label>
+      <label>Fundo<input type="color" data-cor="--pergaminho" value="#f3ecdc"></label>
+      <button class="btn-sec" id="exportar">Exportar edições</button>
+      <button class="btn-sec" id="importar">Importar</button>
+      <button class="btn-sec" id="restaurar">Restaurar original</button>
+      <a class="btn" href="../" target="_blank">Ver site</a>
+      <button class="btn-sec" id="sair">Sair</button>
+    </div>
+    <div class="dica">Clique em qualquer texto para editar. Clique nas fotos (borda tracejada) para trocar a imagem. Tudo é salvo automaticamente neste navegador.</div>
+    <iframe id="previa" title="Prévia editável do site"></iframe>
+  </section>
+
+<script>
+// ATENÇÃO: login provisório (adm/adm), apenas para uso local.
+// Antes de publicar o site, trocar por autenticação de verdade no servidor.
+const USUARIO = 'adm', SENHA = 'adm';
+const CHAVE = 'sitioCoelhos.edicoes';
+const previa = document.getElementById('previa');
+const status = document.getElementById('status');
+
+function entrar() { document.body.classList.add('logado'); previa.src = '../' + document.getElementById('pagina').value + '?editar=1'; carregarCores(); }
+try { if (sessionStorage.getItem('sitioCoelhos.admin') === '1') entrar(); } catch (e) {}
+
+document.getElementById('form-login').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target;
+  if (f.usuario.value.trim() === USUARIO && f.senha.value === SENHA) {
+    try { sessionStorage.setItem('sitioCoelhos.admin', '1'); } catch (e) {}
+    entrar();
+  } else document.getElementById('erro').textContent = 'Usuário ou senha incorretos.';
+});
+document.getElementById('pagina').onchange = e => { previa.src = '../' + e.target.value + '?editar=1'; };
+document.getElementById('sair').onclick = () => { try { sessionStorage.removeItem('sitioCoelhos.admin'); } catch (e) {} location.reload(); };
+
+function ler() { try { return JSON.parse(localStorage.getItem(CHAVE)) || {}; } catch (e) { return {}; } }
+function gravar(ed) { localStorage.setItem(CHAVE, JSON.stringify(ed)); }
+function avisar(t) { status.textContent = t; clearTimeout(avisar.t); avisar.t = setTimeout(() => status.textContent = 'Pronto', 2500); }
+window.addEventListener('message', e => { if (e.data === 'salvo') avisar('Salvo ✓'); });
+
+function carregarCores() {
+  const cores = ler().cores || {};
+  document.querySelectorAll('[data-cor]').forEach(inp => { if (cores[inp.dataset.cor]) inp.value = cores[inp.dataset.cor]; });
+}
+document.querySelectorAll('[data-cor]').forEach(inp => inp.addEventListener('input', () => {
+  const ed = ler(); ed.cores = ed.cores || {}; ed.cores[inp.dataset.cor] = inp.value; gravar(ed);
+  previa.contentDocument.documentElement.style.setProperty(inp.dataset.cor, inp.value);
+  avisar('Salvo ✓');
+}));
+
+document.getElementById('exportar').onclick = () => {
+  const blob = new Blob([JSON.stringify(ler(), null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'edicoes-sitio.json'; a.click();
+};
+document.getElementById('importar').onclick = () => {
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json';
+  inp.onchange = async () => {
+    try { gravar(JSON.parse(await inp.files[0].text())); previa.contentWindow.location.reload(); carregarCores(); avisar('Importado ✓'); }
+    catch (e) { alert('Arquivo inválido.'); }
+  };
+  inp.click();
+};
+document.getElementById('restaurar').onclick = () => {
+  if (confirm('Apagar todas as edições e voltar ao site original?')) { localStorage.removeItem(CHAVE); location.reload(); }
+};
+</script>
+</body>
+</html>
